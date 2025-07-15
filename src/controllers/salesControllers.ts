@@ -10,7 +10,7 @@ export class SalesController {
                 "select BIN_TO_UUID(v.id) as id, LPAD(v.numero_venta, 10, '0') AS numero_venta, v.termino, v.observaciones, v.cuenta_por_cobrar, v.impuesto_manual, v.subtotal, v.total, BIN_TO_UUID(cl.id) as id_cliente, cl.nombre_cliente as cliente, v.fecha_creacion, coalesce(uc.nombre_usuario, '') as nombre_usuario_creador from venta v inner join cliente cl on cl.id=v.id_cliente left join usuario uc on uc.id=v.usuario_creador order by v.numero_venta desc;"
             );
             res.json(result[0]);
-        } catch (error) {
+        } catch (error: any) {
             res.status(500).json({ error: error.message });
         }
     };
@@ -24,7 +24,7 @@ export class SalesController {
                 [id]
             );
             res.json(result[0]);
-        } catch (error) {
+        } catch (error: any) {
             res.status(500).json({ error: error.message })
         }
     }
@@ -53,7 +53,7 @@ export class SalesController {
                 "select count(BIN_TO_UUID(id)) as idUser from usuario where BIN_TO_UUID(id) = ?;",
                 [usuario_creador]
             );
-            const [{ idUser }] = userExists[0];
+            const [{ idUser }] = (userExists as any)[0];
             if (idUser === 0) {
                 const error = new Error("El usuario que esta intentando crear esta venta no existe en la base de datos...");
                 return res.status(409).json({ error: error.message });
@@ -64,14 +64,14 @@ export class SalesController {
                 "select count(BIN_TO_UUID(id)) as idCustomer from cliente where BIN_TO_UUID(id) = ?;",
                 [id_cliente]
             );
-            const [{ idCustomer }] = customerExists[0];
+            const [{ idCustomer }] = (customerExists as any)[0];
             if (idCustomer === 0) {
                 const error = new Error("El cliente que esta buscando no existe en la base de datos...");
                 return res.status(409).json({ error: error.message });
             }
 
             const uuId = await connection.query("select UUID() as getIdSales;")
-            const [{ getIdSales }] = uuId[0];
+            const [{ getIdSales }] = (uuId as any)[0];
 
             await connection.query(
                 "insert into venta (id, termino, observaciones, subtotal, total, cuenta_por_cobrar, impuesto_manual, id_cliente, fecha_creacion, usuario_creador) values (UUID_TO_BIN(?), ?, ?, ?, ?, ?, ?, UUID_TO_BIN(?), now(), UUID_TO_BIN(?));",
@@ -94,7 +94,7 @@ export class SalesController {
                     "select count(BIN_TO_UUID(id)) as idProduct from producto where BIN_TO_UUID(id) = ?;",
                     [detallesVenta.id_producto]
                 );
-                const [{ idProduct }] = productExists[0];
+                const [{ idProduct }] = (productExists as any)[0];
                 if (idProduct === 0) {
                     const error = new Error("El producto que esta buscando no existe en la base de datos...");
                     return res.status(409).json({ error: error.message });
@@ -116,7 +116,7 @@ export class SalesController {
                     "select k.fecha_creacion, k.precio_disponible, k.cantidad_disponible, k.total_disponible from kardex k inner join  producto p on p.id=k.id_producto where BIN_TO_UUID(k.id_producto) = ? order by k.fecha_creacion desc;",
                     [detallesVenta.id_producto]
                 )
-                const [{ precio_disponible, cantidad_disponible, total_disponible }] = getStockbyKardex[0];
+                const [{ precio_disponible, cantidad_disponible, total_disponible }] = (getStockbyKardex as any)[0];
 
                 const resultCantidadNew = cantidad_disponible - detallesVenta.cantidad;                
                 const resultTotal = parseInt(total_disponible) - parseInt(detallesVenta.subtotal.toString());
@@ -126,7 +126,7 @@ export class SalesController {
                     "select utilidad1, utilidad2, utilidad3, utilidad4 from producto where BIN_TO_UUID(id) = ?;",
                     [detallesVenta.id_producto]
                 )
-                const [{ utilidad1, utilidad2, utilidad3, utilidad4 }] = getEarningProductById[0];
+                const [{ utilidad1, utilidad2, utilidad3, utilidad4 }] = (getEarningProductById as any)[0];
 
                 const earningNew1 = 100 - utilidad1;
                 const result1 = earningNew1 / 100;
@@ -193,34 +193,32 @@ export class SalesController {
                     "select count(BIN_TO_UUID(id_cliente)) as customerExistsBalance from balance_cliente where BIN_TO_UUID(id_cliente) = ?;",
                     [id_cliente]
                 );
-                const [{ customerExistsBalance }] = customerExistsInBalance[0];
+                const [{ customerExistsBalance }] = (customerExistsInBalance as any)[0];
 
                 if (customerExistsBalance >= 1) {
                     // * get the debit, credit and balance of the customer
                     const resultDataBalanceCustomer = await connection.query(
-                        "select debito as totalDebito, credito as totalCredito, balance as totalBalance, BIN_TO_UUID(id_cliente) as idCustomer from balance_cliente where BIN_TO_UUID(id_cliente) = ?;",
+                        "select balance as totalBalance, BIN_TO_UUID(id_cliente) as idCustomer from balance_cliente where BIN_TO_UUID(id_cliente) = ?;",
                         [id_cliente]
                     );
 
-                    const [{
-                        totalDebito,
-                        totalcredito,
+                    const [{                        
                         totalBalance
-                    }] = resultDataBalanceCustomer[0];
+                    }] = (resultDataBalanceCustomer as any)[0];
 
                     // * get number of sales
                     const resultNumberSales = await connection.query(
                         "select LPAD(numero_venta, 10, '0') AS numberSale from venta order by numero_venta desc limit 1;"
                     );
 
-                    const [{ numberSale }] = resultNumberSales[0];
+                    const [{ numberSale }] = (resultNumberSales as any)[0];
                     const descriptionBalanceCustomer = `Factura N° ${numberSale}`;
 
                     // * create operation balance customer
                     const totalBalanceCustomer = totalBalance - parseInt(total.toString());
 
                     const uuIdBalanceCustomer = await connection.query("select UUID() as getIdBalanceCustomer;")
-                    const [{ getIdBalanceCustomer }] = uuIdBalanceCustomer[0];
+                    const [{ getIdBalanceCustomer }] = (uuIdBalanceCustomer as any)[0];
 
                     await connection.query(
                         "insert into balance_cliente(id, descripcion, fecha_emision, fecha_vencimiento, debito, credito, balance, estado, estado_credito, id_venta, usuario_creador, id_cliente) values (UUID_TO_BIN(?), ?, now(), ?, ?, ?, ?, ?, ?, UUID_TO_BIN(?), UUID_TO_BIN(?), UUID_TO_BIN(?));",
@@ -261,11 +259,11 @@ export class SalesController {
                     );
 
                     // * get number of buys
-                    const [{ numberSale }] = resultNumberBuys[0];
+                    const [{ numberSale }] = (resultNumberBuys as any)[0];
                     const descriptionBalanceCustomers = `Factura N° ${numberSale}`;
 
                     const uuIdBalanceCustomer = await connection.query("select UUID() as getIdBalanceSupplier;")
-                    const [{ getIdBalanceSupplier }] = uuIdBalanceCustomer[0];
+                    const [{ getIdBalanceSupplier }] = (uuIdBalanceCustomer as any)[0];
 
                     // * insert data in the first register of balance customer
                     await connection.query(
@@ -302,7 +300,7 @@ export class SalesController {
                 }
             }
             res.send("La factura se creo correctamente...");
-        } catch (error) {
+        } catch (error: any) {
             res.status(500).json({ error: error.message });
         }
     };
@@ -332,7 +330,7 @@ export class SalesController {
                 "select count(BIN_TO_UUID(id)) as idUser from usuario where BIN_TO_UUID(id) = ?;",
                 [usuario_creador]
             );
-            const [{ idUser }] = userExists[0];
+            const [{ idUser }] = (userExists as any)[0];
             if (idUser === 0) {
                 const error = new Error("El usuario que esta intentando crear esta facturación no existe en la base de datos...");
                 return res.status(409).json({ error: error.message });
@@ -343,7 +341,7 @@ export class SalesController {
                 "select count(BIN_TO_UUID(id)) as idCustomer from cliente where BIN_TO_UUID(id) = ?;",
                 [id_cliente]
             );
-            const [{ idCustomer }] = customerExists[0];
+            const [{ idCustomer }] = (customerExists as any)[0];
             if (idCustomer === 0) {
                 const error = new Error("El cliente que esta buscando no existe en la base de datos...");
                 return res.status(409).json({ error: error.message });
@@ -353,14 +351,14 @@ export class SalesController {
                 "select count(BIN_TO_UUID(id)) as idSalesQuoteExists from cotizacion_venta where BIN_TO_UUID(id) = ?;",
                 [idSalesQuote]
             );
-            const [{ idSalesQuoteExists }] = salesQuoteExists[0];
+            const [{ idSalesQuoteExists }] = (salesQuoteExists as any)[0];
             if (idSalesQuoteExists === 0) {
                 const error = new Error("Esta proforma que esta buscando no existe en la base de datos...");
                 return res.status(409).json({ error: error.message });
             }
 
             const uuId = await connection.query("select UUID() as getIdSales;")
-            const [{ getIdSales }] = uuId[0];
+            const [{ getIdSales }] = (uuId as any)[0];
 
             await connection.query(
                 "insert into venta (id, termino, observaciones, subtotal, total, estado, cuenta_por_cobrar, impuesto_manual, id_cliente, fecha_creacion, usuario_creador) values (UUID_TO_BIN(?), ?, ?, ?, ?, ?, ?, ?, UUID_TO_BIN(?), now(), UUID_TO_BIN(?));",
@@ -388,7 +386,7 @@ export class SalesController {
                     "select count(BIN_TO_UUID(id)) as idProduct from producto where BIN_TO_UUID(id) = ?;",
                     [detallesVenta.id_producto]
                 );
-                const [{ idProduct }] = productExists[0];
+                const [{ idProduct }] = (productExists as any)[0];
                 if (idProduct === 0) {
                     const error = new Error("El producto que esta buscando no existe en la base de datos...");
                     return res.status(409).json({ error: error.message });
@@ -421,34 +419,32 @@ export class SalesController {
                     "select count(BIN_TO_UUID(id_cliente)) as customerExistsBalance from balance_cliente where BIN_TO_UUID(id_cliente) = ?;",
                     [id_cliente]
                 );
-                const [{ customerExistsBalance }] = customerExistsInBalance[0];
+                const [{ customerExistsBalance }] = (customerExistsInBalance as any)[0];
 
                 if (customerExistsBalance >= 1) {
                     // * get the debit, credit and balance of the customer
                     const resultDataBalanceCustomer = await connection.query(
-                        "select debito as totalDebito, credito as totalCredito, balance as totalBalance, BIN_TO_UUID(id_cliente) as idCustomer from balance_cliente where BIN_TO_UUID(id_cliente) = ?;",
+                        "select balance as totalBalance, BIN_TO_UUID(id_cliente) as idCustomer from balance_cliente where BIN_TO_UUID(id_cliente) = ?;",
                         [id_cliente]
                     );
 
-                    const [{
-                        totalDebito,
-                        totalcredito,
+                    const [{                        
                         totalBalance
-                    }] = resultDataBalanceCustomer[0];
+                    }] = (resultDataBalanceCustomer as any)[0];
 
                     // * get number of sales
                     const resultNumberSales = await connection.query(
                         "select LPAD(numero_venta, 10, '0') AS numberSale from venta order by numero_venta desc limit 1;"
                     );
 
-                    const [{ numberSale }] = resultNumberSales[0];
+                    const [{ numberSale }] = (resultNumberSales as any)[0];
                     const descriptionBalanceCustomer = `Factura N° ${numberSale}`;
 
                     // * create operation balance customer
                     const totalBalanceCustomer = totalBalance - parseInt(total.toString());
 
                     const uuIdBalanceCustomer = await connection.query("select UUID() as getIdBalanceCustomer;")
-                    const [{ getIdBalanceCustomer }] = uuIdBalanceCustomer[0];
+                    const [{ getIdBalanceCustomer }] = (uuIdBalanceCustomer as any)[0];
 
                     await connection.query(
                         "insert into balance_cliente(id, descripcion, fecha_emision, fecha_vencimiento, debito, credito, balance, estado, estado_credito, id_venta, usuario_creador, id_cliente) values (UUID_TO_BIN(?), ?, now(), ?, ?, ?, ?, ?, ?, UUID_TO_BIN(?), UUID_TO_BIN(?), UUID_TO_BIN(?));",
@@ -489,11 +485,11 @@ export class SalesController {
                     );
 
                     // * get number of buys
-                    const [{ numberSale }] = resultNumberBuys[0];
+                    const [{ numberSale }] = (resultNumberBuys as any)[0];
                     const descriptionBalanceCustomers = `Factura N° ${numberSale}`;
 
                     const uuIdBalanceCustomer = await connection.query("select UUID() as getIdBalanceSupplier;")
-                    const [{ getIdBalanceSupplier }] = uuIdBalanceCustomer[0];
+                    const [{ getIdBalanceSupplier }] = (uuIdBalanceCustomer as any)[0];
 
                     // * insert data in the first register of balance customer
                     await connection.query(
@@ -531,7 +527,7 @@ export class SalesController {
             }
 
             res.send("La factura se creo correctamente...");
-        } catch (error) {            
+        } catch (error: any) {            
             res.status(500).json({ error: error.message });
         }
     };
@@ -561,7 +557,7 @@ export class SalesController {
                 "select count(BIN_TO_UUID(id)) as idUser from usuario where BIN_TO_UUID(id) = ?;",
                 [usuario_creador]
             );
-            const [{ idUser }] = userExists[0];
+            const [{ idUser }] = (userExists as any)[0];
             if (idUser === 0) {
                 const error = new Error("El usuario que esta intentando crear esta facturación no existe en la base de datos...");
                 return res.status(409).json({ error: error.message });
@@ -572,7 +568,7 @@ export class SalesController {
                 "select count(BIN_TO_UUID(id)) as idCustomer from cliente where BIN_TO_UUID(id) = ?;",
                 [id_cliente]
             );
-            const [{ idCustomer }] = customerExists[0];
+            const [{ idCustomer }] = (customerExists as any)[0];
             if (idCustomer === 0) {
                 const error = new Error("El cliente que esta buscando no existe en la base de datos...");
                 return res.status(409).json({ error: error.message });
@@ -582,14 +578,14 @@ export class SalesController {
                 "select count(BIN_TO_UUID(id)) as idSeparatedProducttExists from producto_apartado where id = UUID_TO_BIN(?);",
                 [idSeparatedProduct]
             );
-            const [{ idSeparatedProducttExists }] = separatedProductteExists[0];
+            const [{ idSeparatedProducttExists }] = (separatedProductteExists as any)[0];
             if (idSeparatedProducttExists === 0) {
                 const error = new Error("Este apartado de producto que estas buscando no existe en la base de datos...");
                 return res.status(409).json({ error: error.message });
             }
 
             const uuId = await connection.query("select UUID() as getIdSales;")
-            const [{ getIdSales }] = uuId[0];
+            const [{ getIdSales }] = (uuId as any)[0];
 
             await connection.query(
                 "insert into venta (id, termino, observaciones, subtotal, total, estado, cuenta_por_cobrar, impuesto_manual, id_cliente, fecha_creacion, usuario_creador) values (UUID_TO_BIN(?), ?, ?, ?, ?, ?, ?, ?, UUID_TO_BIN(?), now(), UUID_TO_BIN(?));",
@@ -617,7 +613,7 @@ export class SalesController {
                     "select count(BIN_TO_UUID(id)) as idProduct from producto where BIN_TO_UUID(id) = ?;",
                     [detallesVenta.id_producto]
                 );
-                const [{ idProduct }] = productExists[0];
+                const [{ idProduct }] = (productExists as any)[0];
                 if (idProduct === 0) {
                     const error = new Error("El producto que esta buscando no existe en la base de datos...");
                     return res.status(409).json({ error: error.message });
@@ -650,34 +646,32 @@ export class SalesController {
                     "select count(BIN_TO_UUID(id_cliente)) as customerExistsBalance from balance_cliente where BIN_TO_UUID(id_cliente) = ?;",
                     [id_cliente]
                 );
-                const [{ customerExistsBalance }] = customerExistsInBalance[0];
+                const [{ customerExistsBalance }] = (customerExistsInBalance as any)[0];
 
                 if (customerExistsBalance >= 1) {
                     // * get the debit, credit and balance of the customer
                     const resultDataBalanceCustomer = await connection.query(
-                        "select debito as totalDebito, credito as totalCredito, balance as totalBalance, BIN_TO_UUID(id_cliente) as idCustomer from balance_cliente where BIN_TO_UUID(id_cliente) = ?;",
+                        "select balance as totalBalance, BIN_TO_UUID(id_cliente) as idCustomer from balance_cliente where BIN_TO_UUID(id_cliente) = ?;",
                         [id_cliente]
                     );
 
-                    const [{
-                        totalDebito,
-                        totalcredito,
+                    const [{                        
                         totalBalance
-                    }] = resultDataBalanceCustomer[0];
+                    }] = (resultDataBalanceCustomer as any)[0];
 
                     // * get number of sales
                     const resultNumberSales = await connection.query(
                         "select LPAD(numero_venta, 10, '0') AS numberSale from venta order by numero_venta desc limit 1;"
                     );
 
-                    const [{ numberSale }] = resultNumberSales[0];
+                    const [{ numberSale }] = (resultNumberSales as any)[0];
                     const descriptionBalanceCustomer = `Factura N° ${numberSale}`;
 
                     // * create operation balance customer
                     const totalBalanceCustomer = totalBalance - parseInt(total.toString());
 
                     const uuIdBalanceCustomer = await connection.query("select UUID() as getIdBalanceCustomer;")
-                    const [{ getIdBalanceCustomer }] = uuIdBalanceCustomer[0];
+                    const [{ getIdBalanceCustomer }] = (uuIdBalanceCustomer as any)[0];
 
                     await connection.query(
                         "insert into balance_cliente(id, descripcion, fecha_emision, fecha_vencimiento, debito, credito, balance, estado, estado_credito, id_venta, usuario_creador, id_cliente) values (UUID_TO_BIN(?), ?, now(), ?, ?, ?, ?, ?, ?, UUID_TO_BIN(?), UUID_TO_BIN(?), UUID_TO_BIN(?));",
@@ -718,11 +712,11 @@ export class SalesController {
                     );
 
                     // * get number of buys
-                    const [{ numberSale }] = resultNumberBuys[0];
+                    const [{ numberSale }] = (resultNumberBuys as any)[0];
                     const descriptionBalanceCustomers = `Factura N° ${numberSale}`;
 
                     const uuIdBalanceCustomer = await connection.query("select UUID() as getIdBalanceSupplier;")
-                    const [{ getIdBalanceSupplier }] = uuIdBalanceCustomer[0];
+                    const [{ getIdBalanceSupplier }] = (uuIdBalanceCustomer as any)[0];
 
                     // * insert data in the first register of balance customer
                     await connection.query(
@@ -760,7 +754,7 @@ export class SalesController {
             }
 
             res.send("La factura se creo correctamente...");
-        } catch (error) {            
+        } catch (error: any) {            
             res.status(500).json({ error: error.message });
         }
     };

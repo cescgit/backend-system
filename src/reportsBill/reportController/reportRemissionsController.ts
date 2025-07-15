@@ -30,7 +30,7 @@ export class reportRemissionsController {
                 celular_empresa,
                 correo_empresa,
                 logotipo
-            } = resultDataCompany[0][0];
+            } = (resultDataCompany[0] as any)[0];
 
             const {
                 nombre_cliente,
@@ -38,13 +38,13 @@ export class reportRemissionsController {
                 codigo,
                 estado,
                 fecha_creacion
-            } = resultDetailsRemissions[0][0];
+            } = (resultDetailsRemissions[0] as any)[0];
 
             const text = estado == 0 ? "ANULADA" : "";
 
             const tableBody = [
                 ["Cantidad", "Producto", "U/M"],
-                ...detalles.map((item: any) => [
+                ...(detalles as any).map((item: any) => [
                     { text: item.cantidad, style: "center" },
                     item.nombre_producto,
                     item.unidad_medida
@@ -82,7 +82,7 @@ export class reportRemissionsController {
                         },
                     ],
                     margin: [20, 10, 30, 20],
-                    height: 200,
+                    //height: 200,
                 },
                 watermark: {
                     text: text, fontSize: 60, angle: -45, color: "#ffb3c1", opacity: 0.5, bold: true
@@ -226,7 +226,7 @@ export class reportRemissionsController {
                 res.end(buffer);
             });
 
-        } catch (error) {            
+        } catch (error: any) {            
             res.status(500).json({ error: error.message });
         }
     }

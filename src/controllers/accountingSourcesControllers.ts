@@ -12,7 +12,7 @@ export class AccountingSourcesController {
                 "select BIN_TO_UUID(id) as id, codigo, descripcion, fecha_creacion from fuente_contable order by codigo;"
             );
             res.json(result[0]);
-        } catch (error) {
+        } catch (error: any) {
             res.status(500).json({ error: error.message });
         }
     };
@@ -27,7 +27,7 @@ export class AccountingSourcesController {
             );
 
             res.json(result[0]);
-        } catch (error) {
+        } catch (error: any) {
             res.status(500).json({ error: error.message });
         }
     };
@@ -44,22 +44,22 @@ export class AccountingSourcesController {
         accountingSources;
 
         try {
-            const userExists = await connection.query(
-                "select count(BIN_TO_UUID(id)) as idUser from usuario where BIN_TO_UUID(id) = ?;",
-                [usuario_creador]
+            const [userExists]: any = await connection.query(
+                "SELECT COUNT(*) as idUser FROM usuario WHERE BIN_TO_UUID(id) = ?;",
+                [req.body.usuario_creador]
             );
-            const [{ idUser }] = userExists[0];
+            const [{ idUser }] = userExists;
             if (idUser === 0) {
                 const error = new Error("El usuario que esta creando esta fuente contable, no existe...");
                 return res.status(409).json({ error: error.message });
             }
 
-            const accountingSourcesExists = await connection.query(
-                "select count(codigo) as valueNumberAccount from fuente_contable where codigo = ?;",
-                [codigo]
+            const [accountingSourcesExists]: any = await connection.query(
+                "SELECT COUNT(*) as valueName FROM fuente_contable WHERE nombre_fuente = ?;",
+                [req.body.nombre_fuente]
             );
-            const [{ valueNumberAccount }] = accountingSourcesExists[0];
-            if (valueNumberAccount === 1) {
+            const [{ valueName }] = accountingSourcesExists;
+            if (valueName === 1) {
                 const error = new Error("Esta fuente contable ya existen en la base de datos...");
                 return res.status(409).json({ error: error.message });
             }
@@ -70,7 +70,7 @@ export class AccountingSourcesController {
             );
 
             res.send("La fuente contable fue creada correctamente...");
-        } catch (error) {
+        } catch (error: any) {
             res.status(500).json({ error: error.message });
         }
     };
@@ -87,22 +87,22 @@ export class AccountingSourcesController {
         } = accountingSources;
 
         try {
-            const userExists = await connection.query(
-                "select count(BIN_TO_UUID(id)) as idUser from usuario where BIN_TO_UUID(id) = ?;",
-                [usuario_modificador]
+            const [userExists2]: any = await connection.query(
+                "SELECT COUNT(*) as idUser FROM usuario WHERE BIN_TO_UUID(id) = ?;",
+                [req.body.usuario_modificador]
             );
-            const [{ idUser }] = userExists[0];
-            if (idUser === 0) {
+            const [{ idUser: idUser2 }] = userExists2;
+            if (idUser2 === 0) {
                 const error = new Error("El usuario que esta creando esta fuente contable, no existe...");
                 return res.status(409).json({ error: error.message });
             }
 
-            const accountingSourceExists = await connection.query(
-                "select count(BIN_TO_UUID(id)) as idAccountingSource from fuente_contable where BIN_TO_UUID(id) = ?;",
-                [id]
+            const [accountingSourcesExists2]: any = await connection.query(
+                "SELECT COUNT(*) as valueName FROM fuente_contable WHERE nombre_fuente = ?;",
+                [req.body.nombre_fuente]
             );
-            const [{ idAccountingSource }] = accountingSourceExists[0];
-            if (idAccountingSource === 0) {
+            const [{ valueName: valueName2 }] = accountingSourcesExists2;
+            if (valueName2 === 0) {
                 const error = new Error(
                     "La fuente contable que estas buscando, no se encontro..."
                 );
@@ -113,7 +113,7 @@ export class AccountingSourcesController {
                 "select count(codigo) as valueNumberAccount from fuente_contable where codigo = ? and BIN_TO_UUID(id) = ?;",
                 [codigo, id]
             );
-            const [{ valueNumberAccount }] = codeAuxiliaryBookExists[0];
+            const [{ valueNumberAccount }] = (codeAuxiliaryBookExists as any)[0];
             if (valueNumberAccount === 1) {
                 const error = new Error("Esta fuente contable ya existe en la base de datos...");
                 return res.status(409).json({ error: error.message });
@@ -125,7 +125,7 @@ export class AccountingSourcesController {
             );
 
             res.send("La fuente contable se modifico correctamente...");
-        } catch (error) {
+        } catch (error: any) {
             res.status(500).json({ error: error.message });
         }
     };

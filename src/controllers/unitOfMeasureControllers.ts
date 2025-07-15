@@ -10,7 +10,7 @@ export class unitOfMeasureControllers {
         "select BIN_TO_UUID(ump.id) as id, ump.unidad_medida, ump.abreviatura, ump.fecha_creacion, coalesce(uc.nombre_usuario, '') as nombre_usuario_creador, coalesce(um.nombre_usuario, '') as nombre_usuario_modificador from unidad_medida ump left join usuario uc on uc.id=ump.usuario_creador left join usuario um on um.id=ump.usuario_modificador;"
       );
       res.json(result[0]);
-    } catch (error) {
+    } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
   };
@@ -25,7 +25,7 @@ export class unitOfMeasureControllers {
       );
 
       res.json(result[0]);
-    } catch (error) {
+    } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
   };
@@ -45,7 +45,7 @@ export class unitOfMeasureControllers {
         "select count(BIN_TO_UUID(id)) as idUser from usuario where BIN_TO_UUID(id) = ?;",
         [usuario_creador]
       );
-      const [{ idUser }] = userExists[0];
+      const [{ idUser }] = (userExists as any)[0];
 
       if (idUser === 0) {
         const error = new Error("El usuario que esta intentando crear la unidad de medida, no existe...");
@@ -56,7 +56,7 @@ export class unitOfMeasureControllers {
         "select count(unidad_medida) as valueUnidadMedida from unidad_medida where unidad_medida = ?;",
         [unidad_medida]
       );
-      const [{ valueUnidadMedida }] = unitOfMeasureValue[0];
+      const [{ valueUnidadMedida }] = (unitOfMeasureValue as any)[0];
       if (valueUnidadMedida === 1) {
         const error = new Error(
           "Esta unidad de medida ya existen en la base de datos..."
@@ -68,7 +68,7 @@ export class unitOfMeasureControllers {
         "select count(abreviatura) as valueAbreviatura from unidad_medida where abreviatura = ?;",
         [abreviatura]
       );
-      const [{ valueAbreviatura }] = unitOfMeasureAbreviatura[0];
+      const [{ valueAbreviatura }] = (unitOfMeasureAbreviatura as any)[0];
       if (valueAbreviatura === 1) {
         const error = new Error(
           "Esta abreviatura ya existen en la base de datos..."
@@ -87,7 +87,7 @@ export class unitOfMeasureControllers {
       );
 
       res.send("Unidad de medida creada correctamente...");
-    } catch (error) {
+    } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
   };
@@ -107,7 +107,7 @@ export class unitOfMeasureControllers {
         "select count(BIN_TO_UUID(id)) as idUser from usuario where BIN_TO_UUID(id) = ?;",
         [usuario_modificador]
       );
-      const [{ idUser }] = userExists[0];
+      const [{ idUser }] = (userExists as any)[0];
       if (idUser === 0) {
         const error = new Error("El usuario que esta intentando editar la unidad de medida, no existe...");
         return res.status(409).json({ error: error.message });
@@ -117,7 +117,7 @@ export class unitOfMeasureControllers {
         "select count(BIN_TO_UUID(id)) as idUnitOfMeasure from unidad_medida where BIN_TO_UUID(id) = ?;",
         [id]
       );
-      const [{ idUnitOfMeasure }] = unitOfMeasureExists[0];
+      const [{ idUnitOfMeasure }] = (unitOfMeasureExists as any)[0];
       if (idUnitOfMeasure === 0) {
         const error = new Error(
           "La unidad de medida que estas buscando, no se encuentra en la base de datos..."
@@ -129,7 +129,7 @@ export class unitOfMeasureControllers {
         "select count(unidad_medida) as valueUnidadMedida from unidad_medida where unidad_medida = ? and BIN_TO_UUID(id) != ?;",
         [unidad_medida, id]
       );
-      const [{ valueUnidadMedida }] = unidadMedidaExists[0];
+      const [{ valueUnidadMedida }] = (unidadMedidaExists as any)[0];
       if (valueUnidadMedida === 1) {
         const error = new Error(
           "Esta unidad de medida se encuentra registrada en la base de datos..."
@@ -141,7 +141,7 @@ export class unitOfMeasureControllers {
         "select count(abreviatura) as valueAbreviatura from unidad_medida where abreviatura = ?;",
         [abreviatura]
       );
-      const [{ valueAbreviatura }] = unitOfMeasureAbreviatura[0];
+      const [{ valueAbreviatura }] = (unitOfMeasureAbreviatura as any)[0];
       if (valueAbreviatura === 1) {
         const error = new Error(
           "Esta abreviatura ya existen en la base de datos..."
@@ -160,7 +160,7 @@ export class unitOfMeasureControllers {
       );
 
       res.send("La unidad de medida se modifico correctamente...");
-    } catch (error) {
+    } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
   };
@@ -173,7 +173,7 @@ export class unitOfMeasureControllers {
         "select count(BIN_TO_UUID(id)) as id from unidad_medida where BIN_TO_UUID(id) = ?;",
         [idUnitOfMeasure]
       );
-      const [{ id }] = exitstsBrand[0];
+      const [{ id }] = (exitstsBrand as any)[0];
 
       if (id === 0) {
         const error = new Error(
@@ -187,7 +187,7 @@ export class unitOfMeasureControllers {
       ]);
 
       res.send("Unidad de medida se ha eliminado correctamente...");
-    } catch (error) {
+    } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
   };

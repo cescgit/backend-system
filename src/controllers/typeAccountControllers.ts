@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
 import { connection } from "../config/db";
 import type {
-    typeAccountInterface,  
+  typeAccountInterface,
 } from "../interface/valueInterface";
 
 export class TypeAccountController {
@@ -12,8 +12,8 @@ export class TypeAccountController {
         "select BIN_TO_UUID(id) as id, nombre, descripcion, fecha_creacion from tipo_cuenta order by nombre;"
       );
       res.json(result[0]);
-    } catch (error) {
-       res.status(500).json({ error: error.message });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
     }
   };
 
@@ -27,8 +27,8 @@ export class TypeAccountController {
       );
 
       res.json(result[0]);
-    } catch (error) {
-       res.status(500).json({ error: error.message });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
     }
   };
 
@@ -36,19 +36,19 @@ export class TypeAccountController {
   static createTypeAccount = async (req: Request, res: Response) => {
     const typeAccount = <typeAccountInterface>req.body;
 
-    const { 
-        nombre,
-        descripcion,        
-        usuario_creador
-     } =
-    typeAccount;
+    const {
+      nombre,
+      descripcion,
+      usuario_creador
+    } =
+      typeAccount;
 
     try {
       const userExists = await connection.query(
         "select count(BIN_TO_UUID(id)) as idUser from usuario where BIN_TO_UUID(id) = ?;",
         [usuario_creador]
       );
-      const [{ idUser }] = userExists[0];
+      const [{ idUser }] = (userExists as any)[0];
       if (idUser === 0) {
         const error = new Error("El usuario que esta creando este tipo cuenta, no existe...");
         return res.status(409).json({ error: error.message });
@@ -58,7 +58,7 @@ export class TypeAccountController {
         "select count(nombre) as valueNaneAccount from tipo_cuenta where nombre = ?;",
         [nombre]
       );
-      const [{ valueNaneAccount }] = typeAccountExists[0];
+      const [{ valueNaneAccount }] = (typeAccountExists as any)[0];
       if (valueNaneAccount === 1) {
         const error = new Error("Este tipo de cuenta ya existen en la base de datos...");
         return res.status(409).json({ error: error.message });
@@ -66,12 +66,12 @@ export class TypeAccountController {
 
       const result = await connection.query(
         "insert into tipo_cuenta (nombre, descripcion, fecha_creacion, usuario_creador) values (?, ?, now(),  UUID_TO_BIN(?));",
-        [nombre, descripcion,usuario_creador]
+        [nombre, descripcion, usuario_creador]
       );
 
       res.send("El tipo de cuenta fue creada correctamente...");
-    } catch (error) {
-       res.status(500).json({ error: error.message });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
     }
   };
 
@@ -79,20 +79,20 @@ export class TypeAccountController {
   static updateTypeAccount = async (req: Request, res: Response) => {
     const { id } = req.params;
     const typeAccount = <typeAccountInterface>req.body;
-    
-    const { 
-        nombre,
-        descripcion,        
-        usuario_modificador
-     } =
-    typeAccount;
+
+    const {
+      nombre,
+      descripcion,
+      usuario_modificador
+    } =
+      typeAccount;
 
     try {
       const userExists = await connection.query(
         "select count(BIN_TO_UUID(id)) as idUser from usuario where BIN_TO_UUID(id) = ?;",
         [usuario_modificador]
       );
-      const [{ idUser }] = userExists[0];
+      const [{ idUser }] = (userExists as any)[0];
       if (idUser === 0) {
         const error = new Error("El usuario que esta editando este tipo de cuenta no existe...");
         return res.status(409).json({ error: error.message });
@@ -102,7 +102,7 @@ export class TypeAccountController {
         "select count(BIN_TO_UUID(id)) as idTypeAccount from tipo_cuenta where BIN_TO_UUID(id) = ?;",
         [id]
       );
-      const [{ idTypeAccount }] = typeAccountExists[0];
+      const [{ idTypeAccount }] = (typeAccountExists as any)[0];
       if (idTypeAccount === 0) {
         const error = new Error(
           "El tipo de cuenta que estas buscando, no se encontro..."
@@ -114,7 +114,7 @@ export class TypeAccountController {
         "select count(nombre) as valueNameExists from tipo_cuenta where nombre = ? and BIN_TO_UUID(id) = ?;",
         [nombre, id]
       );
-      const [{ valueNameExists }] = typeAccountNameExists[0];
+      const [{ valueNameExists }] = (typeAccountExists as any)[0];
       if (valueNameExists === 1) {
         const error = new Error("Este tipo de cuenta ya existen en la base de datos...");
         return res.status(409).json({ error: error.message });
@@ -126,8 +126,8 @@ export class TypeAccountController {
       );
 
       res.send("El tipo de cuenta se modifico correctamente...");
-    } catch (error) {
-       res.status(500).json({ error: error.message });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
     }
   };
 }

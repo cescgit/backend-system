@@ -10,7 +10,7 @@ export class ProductControllers {
         "select BIN_TO_UUID(p.id) as id, p.codigo, p.sac, p.nombre_producto, p.descripcion_producto, p.precio_compra, p.precio_venta_promedio,  p.cantidad, p.cantidad_minima, p.imagen_url, p.estado, p.expiracion, p.fecha_expiracion, p.pesoValor,  p.precio1, p.utilidad1, p.precio2, p.utilidad2, p.precio3, p.utilidad3, p.precio4, p.utilidad4, p.fecha_creacion,  BIN_TO_UUID(p.id_unidad_medida) as id_unidad_medida, BIN_TO_UUID(p.id_peso) as id_peso, BIN_TO_UUID(p.id_marca) as id_marca, m.nombre_marca as marca, BIN_TO_UUID(p.id_categoria) as id_categoria, c.nombre_categoria as categoria, coalesce(uc.nombre_usuario, '') as nombre_usuario_creador, coalesce(um.nombre_usuario, '') as nombre_usuario_modificador from producto p inner join  marca m on m.id=p.id_marca inner join  categoria c on c.id=p.id_categoria left join usuario uc on uc.id=p.usuario_creador left join usuario um on um.id=p.usuario_modificador order by p.fecha_creacion desc;"
       );
       res.json(result[0]);
-    } catch (error) {      
+    } catch (error: any) {      
       res.status(500).json({ error: error.message });
     }
   };
@@ -25,7 +25,7 @@ export class ProductControllers {
       );
 
       res.json(result[0]);
-    } catch (error) {      
+    } catch (error: any) {      
       res.status(500).json({ error: error.message });
     }
   };
@@ -67,7 +67,7 @@ export class ProductControllers {
         "select count(BIN_TO_UUID(id)) as idUser from usuario where BIN_TO_UUID(id) = ?;",
         [usuario_creador]
       );
-      const [{ valueId }] = idExist[0];
+      const [{ valueId }] = (idExist as any)[0];
 
       if (valueId === 0) {
         const error = new Error("El usuario que esta intentando crear el producto, no existe...");
@@ -78,7 +78,7 @@ export class ProductControllers {
         "select count(codigo) as valueCode from producto where codigo = ? and BIN_TO_UUID(id);",
         [codigo]
       );
-      const [{ valueCode }] = codeExists[0];
+      const [{ valueCode }] = (codeExists as any)[0];
       if (valueCode === 1) {
         const error = new Error(
           "Este producto ya existen en la base de datos..."
@@ -90,7 +90,7 @@ export class ProductControllers {
         "select count(sac) as sacCode from producto where codigo = ?;",
         [sac]
       );
-      const [{ sacCode }] = sacExists[0];
+      const [{ sacCode }] = (sacExists as any)[0];
       if (sacCode === 1) {
         const error = new Error(
           "El código sac ya existen en la base de datos..."
@@ -101,7 +101,7 @@ export class ProductControllers {
       const brandActive = await connection.query("select estado as stateBrand from marca where BIN_TO_UUID(id) = ?",
         [id_marca]
       );
-      const [{ stateBrand }] = brandActive;
+      const [{ stateBrand }] = (brandActive as any) [0];
       if (stateBrand === 0) {
         const error = new Error(
           "No puedes seleccionar una marca Inactiva..."
@@ -112,7 +112,7 @@ export class ProductControllers {
       const categoryActive = await connection.query("select estado as stateCategory from categoria where BIN_TO_UUID(id) = ?",
         [id_categoria]
       );
-      const [{ stateCategory }] = categoryActive;
+      const [{ stateCategory }] = (categoryActive as any) [0];
       if (stateCategory === 0) {
         const error = new Error(
           "No puedes seleccionar una categoría Inactiva..."
@@ -152,7 +152,7 @@ export class ProductControllers {
       );
 
       res.send("Producto creado correctamente");
-    } catch (error) {      
+    } catch (error: any) {      
       res.status(500).json({ error: error.message });
     }
   };
@@ -195,7 +195,7 @@ export class ProductControllers {
         "select count(BIN_TO_UUID(id)) as idUser from usuario where BIN_TO_UUID(id) = ?;",
         [usuario_modificador]
       );
-      const [{ idUser }] = idExist[0];
+      const [{ idUser }] = (idExist as any)[0];
       if (idUser === 0) {
         const error = new Error("El usuario que esta intentanto modificar el producto, no existe...");
         return res.status(409).json({ error: error.message });
@@ -205,7 +205,7 @@ export class ProductControllers {
         "select count(codigo) as valueCode from producto where codigo = ? and BIN_TO_UUID(id) != ?;",
         [codigo, id]
       );
-      const [{ valueCode }] = codeExists[0];
+      const [{ valueCode }] = (codeExists as any)[0];
       if (valueCode === 1) {
         const error = new Error(
           "Este producto ya existen en la base de datos..."
@@ -217,7 +217,7 @@ export class ProductControllers {
         "select count(sac) as sacCode from producto where sac = ? and BIN_TO_UUID(id) != ?;",
         [sac, id]
       );      
-      const [{ sacCode }] = sacExists[0];
+      const [{ sacCode }] = (sacExists as any)[0];
       if (sacCode === 1) {
         const error = new Error(
           "El código sac ya existen en la base de datos..."
@@ -228,7 +228,7 @@ export class ProductControllers {
       const brandActive = await connection.query("select estado as stateBrand from marca where BIN_TO_UUID(id) = ?",
         [id_marca]
       );
-      const [{ stateBrand }] = brandActive;
+      const [{ stateBrand }] = (brandActive as any)[0];
       if (stateBrand === 0) {
         const error = new Error(
           "No puedes seleccionar una marca Inactiva..."
@@ -239,7 +239,7 @@ export class ProductControllers {
       const categoryActive = await connection.query("select estado as stateCategory from categoria where BIN_TO_UUID(id) = ?",
         [id_categoria]
       );
-      const [{ stateCategory }] = categoryActive;
+      const [{ stateCategory }] = (categoryActive as any) [0];
       if (stateCategory === 0) {
         const error = new Error(
           "No puedes seleccionar una categoría Inactiva..."
@@ -280,7 +280,7 @@ export class ProductControllers {
       );
 
       res.send("Producto modificado correctamente...");
-    } catch (error) {
+    } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
   };
@@ -293,7 +293,7 @@ export class ProductControllers {
         "select count(BIN_TO_UUID(id)) as id from producto where BIN_TO_UUID(id) = ?;",
         [idProduct]
       );
-      const [{ id }] = existsProducto[0];
+      const [{ id }] = (existsProducto as any)[0];
       if (id === 0) {
         const error = new Error(
           "El producto que estas buscando, no se encontro..."
@@ -305,7 +305,7 @@ export class ProductControllers {
         "select count(BIN_TO_UUID(id_producto)) as existsProduct from inventario where BIN_TO_UUID(id_producto) = ?;",
         [idProduct]
       );
-      const [{ existsProduct }] = existsProductInventory[0];
+      const [{ existsProduct }] = (existsProductInventory as any)[0];
       if (existsProduct === 1) {
         const error = new Error(
           "El producto no se puede eliminar ya que dispones en el inventario..."
@@ -319,7 +319,7 @@ export class ProductControllers {
       );
 
       res.send("Producto eliminado correctamente...");
-    } catch (error) {
+    } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
   };

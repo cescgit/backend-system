@@ -37,7 +37,7 @@ export class salesQuotesControllers {
                 celular_empresa,
                 correo_empresa,
                 logotipo
-            } = resultDataCompany[0][0];
+            } = (resultDataCompany[0] as any)[0];
 
             const {
                 numero_cotizacion,
@@ -53,7 +53,7 @@ export class salesQuotesControllers {
                 total,
                 subtotal,
                 ruc: ruc_cliente,
-            } = resultSalesQuote[0][0];;
+            } = (resultSalesQuote[0] as any)[0];
 
             const {
                 porcentaje,
@@ -107,7 +107,7 @@ export class salesQuotesControllers {
 
             // Fila 12-13: Datos de productos
             const productos =
-                detalles.map((dataDetailsSalesQuote) => {
+                (detalles as any).map((dataDetailsSalesQuote: any) => {
                     const { nombre_producto, sac, precio_venta, cantidad, subtotal } = dataDetailsSalesQuote;
                     return [
                         nombre_producto,
@@ -118,7 +118,7 @@ export class salesQuotesControllers {
                     ]
                 })
 
-            productos.forEach((prod, i) => {
+            productos.forEach((prod: any, i: number) => {
                 const row = worksheet.getRow(12 + i);
                 row.values = [, ...prod];
                 row.eachCell((cell) => {
@@ -168,7 +168,7 @@ export class salesQuotesControllers {
             await workbook.xlsx.write(res);
             res.send();
 
-        } catch (error) {
+        } catch (error: any) {
             res.status(500).json({ error: error.message });
         }
     }

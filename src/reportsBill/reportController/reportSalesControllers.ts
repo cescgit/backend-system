@@ -40,7 +40,7 @@ export class reportSalesController {
         direccion_cliente,
         celular_cliente,
         fecha_creacion
-      } = resultSales[0][0];;
+      } = (resultSales[0] as any)[0];
 
       const {
         porcentaje,
@@ -54,7 +54,7 @@ export class reportSalesController {
           [id]
         );
 
-        const [{ fecha_vencimiento }] = getDateEnd[0];
+        const [{ fecha_vencimiento }] = (getDateEnd[0] as any)[0];
         fechaVencimiento = formatDate(fecha_vencimiento);
       }
 
@@ -72,7 +72,7 @@ export class reportSalesController {
       // ];
 
       // 2. Mapea los objetos a un array de filas (RowData)
-      const rows: (string | number)[][] = detalles.map(p => [
+      const rows: (string | number)[][] = (detalles as any).map((p: any) => [
         p.codigo,
         p.cantidad,
         p.abreviatura,
@@ -113,7 +113,7 @@ export class reportSalesController {
             },
           ],
           margin: [20, 70, 72, 10],
-          height: 400,
+         // height: 400,
         },
         content: [
           {
@@ -173,7 +173,7 @@ export class reportSalesController {
               }
             ]
           },
-          { text: "Observasiones: " + observaciones, alignment: "left", style: "textBold", margin: [8, -45, 60, 0], width: 500 },          
+          { text: "Observasiones: " + observaciones, alignment: "left", style: "textBold", margin: [8, -45, 60, 0] },          
           { text: "\n" },
           { text: "\n" },
           { text: "\n" },
@@ -278,7 +278,7 @@ export class reportSalesController {
         res.end(buffer);
       });
 
-    } catch (error) {
+    } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
   }

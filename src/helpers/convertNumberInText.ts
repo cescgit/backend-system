@@ -13,7 +13,7 @@ export function numeroALetrasCordobas(num: number) {
     "quinientos", "seiscientos", "setecientos", "ochocientos", "novecientos"
   ];
 
-  function convertirMiles(n) {
+  function convertirMiles(n: number): string {
     if (n === 0) return "";
     if (n === 100) return "cien";
     if (n < 20) return unidades[n];
@@ -30,14 +30,14 @@ export function numeroALetrasCordobas(num: number) {
     if (n < 1000000) {
       const miles = Math.floor(n / 1000);
       const resto = n % 1000;
-      let milesTexto = miles === 1 ? "mil" : convertirMiles(miles) + " mil";
+      const milesTexto = miles === 1 ? "mil" : convertirMiles(miles) + " mil";
       return milesTexto + (resto ? " " + convertirMiles(resto) : "");
     }
     return "Número demasiado grande";
   }
 
   // Corrección gramatical de "uno" a "un" si va antes de "córdoba"
-  function corregirUn(texto) {
+  function corregirUn(texto: string) {
     return texto
       .replace(/\buno\b/g, "un") // solo cuando está solo
       .replace(/\bveintiuno\b/g, "veintiún")

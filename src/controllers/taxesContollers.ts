@@ -6,11 +6,11 @@ export class TaxesController {
   // * Get alls taxes
   static getAllTaxes = async (req: Request, res: Response) => {
     try {
-      const result = await connection.query(
+      const [result] = await connection.query(
         "select BIN_TO_UUID(id) as id, abreviatura, descripcion, valor_porcentaje, valor_cantidad, fecha_creacion from impuesto;"
       );
-      res.json(result[0]);
-    } catch (error) {
+      res.json(result);
+    } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
   };
@@ -19,13 +19,13 @@ export class TaxesController {
   static getTaxesById = async (req: Request, res: Response) => {
     const { id } = req.params;
     try {
-      const result = await connection.query(
+      const [result] = await connection.query(
         "select BIN_TO_UUID(id) as id, abreviatura, descripcion, valor_porcentaje, valor_cantidad, fecha_creacion from impuesto where BIN_TO_UUID(id) = ?;",
         [id]
       );
 
-      res.json(result[0]);
-    } catch (error) {
+      res.json(result);
+    } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
   };
@@ -43,22 +43,22 @@ export class TaxesController {
     } = tax;
 
     try {
-      const userExists = await connection.query(
+      const [userExists] = await connection.query(
         "select count(BIN_TO_UUID(id)) as idUser from usuario where BIN_TO_UUID(id) = ?;",
         [usuario_creador]
       );
-      const [{ idUser }] = userExists[0];
+      const { idUser } = (userExists as any)[0];
 
       if (idUser === 0) {
         const error = new Error("El usuario que esta intentando crear el impuesto, no existe...");
         return res.status(409).json({ error: error.message });
       }
 
-      const taxesValue = await connection.query(
+      const [taxesValue] = await connection.query(
         "select count(abreviatura) as valueTax from impuesto where abreviatura = ?;",
         [abreviatura]
       );
-      const [{ valueTax }] = taxesValue[0];
+      const { valueTax } = (taxesValue as any)[0];
       if (valueTax === 1) {
         const error = new Error(
           "Este impuesto ya existen en la base de datos..."
@@ -66,7 +66,7 @@ export class TaxesController {
         return res.status(409).json({ error: error.message });
       }
 
-      const result = await connection.query(
+      await connection.query(
         `insert into impuesto (abreviatura, descripcion, valor_porcentaje, valor_cantidad, fecha_creacion, usuario_creador)
         values( ?, ?, ?, ?, now(), UUID_TO_BIN(?));`,
         [
@@ -79,7 +79,7 @@ export class TaxesController {
       );
 
       res.send("Impuesto creado correctamente...");
-    } catch (error) {
+    } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
   };
@@ -97,21 +97,21 @@ export class TaxesController {
     } = tax;
 
     try {
-      const userExists = await connection.query(
+      const [userExists] = await connection.query(
         "select count(BIN_TO_UUID(id)) as idUser from usuario where BIN_TO_UUID(id) = ?;",
         [usuario_modificador]
       );
-      const [{ idUser }] = userExists[0];
+      const { idUser } = (userExists as any)[0];
       if (idUser === 0) {
         const error = new Error("El usuario que esta intentando editar el impuesto, no existe...");
         return res.status(409).json({ error: error.message });
       }
 
-      const taxExists = await connection.query(
+      const [taxExists] = await connection.query(
         "select count(BIN_TO_UUID(id)) as idTax from impuesto where BIN_TO_UUID(id) = ?;",
         [id]
       );
-      const [{ idTax }] = taxExists[0];
+      const { idTax } = (taxExists as any)[0];
       if (idTax === 0) {
         const error = new Error(
           "El impuesto que estas buscando, no se encontro..."
@@ -119,11 +119,11 @@ export class TaxesController {
         return res.status(404).json({ error: error.message });
       }
 
-      const abreviaturaTaxExists = await connection.query(
+      const [abreviaturaTaxExists] = await connection.query(
         "select count(abreviatura) as valueName from impuesto where abreviatura = ? and BIN_TO_UUID(id) != ?;",
         [abreviatura, id]
       );
-      const [{ valueName }] = abreviaturaTaxExists[0];
+      const { valueName } = (abreviaturaTaxExists as any)[0];
       if (valueName === 1) {
         const error = new Error(
           "Este impuesto se encuentra registrado en la base de datos..."
@@ -131,7 +131,7 @@ export class TaxesController {
         return res.status(409).json({ error: error.message });
       }
 
-      const result = await connection.query(
+      const [result] = await connection.query(
         "update impuesto set abreviatura = ?, descripcion = ?, valor_porcentaje = ?, valor_cantidad = ?, fecha_modificacion= now(), usuario_modificador = UUID_TO_BIN(?) where BIN_TO_UUID(id) = ?;",
         [
           abreviatura,
@@ -144,7 +144,7 @@ export class TaxesController {
       );
 
       res.send("El impuesto se modifico correctamente...");
-    } catch (error) {
+    } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
   };
@@ -153,11 +153,11 @@ export class TaxesController {
   static deleteTaxes = async (req: Request, res: Response) => {
     const { idTax } = req.params;
     try {
-      const exitstsBrand = await connection.query(
+      const [exitstsBrand] = await connection.query(
         "select count(BIN_TO_UUID(id)) as id from impuesto where BIN_TO_UUID(id) = ?;",
         [idTax]
       );
-      const [{ id }] = exitstsBrand[0];
+      const { id } = (exitstsBrand as any)[0];
 
       if (id === 0) {
         const error = new Error(
@@ -171,7 +171,7 @@ export class TaxesController {
       ]);
 
       res.send("Impuesto eliminado correctamente...");
-    } catch (error) {
+    } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
   };

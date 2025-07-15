@@ -12,7 +12,7 @@ export class SupplierBalanceController {
         "select BIN_TO_UUID(bp.id) as id, LPAD(p.codigo_proveedor, 10, '0') AS codigo_proveedor, p.nombre_proveedor, bp.fecha_emision, bp.credito, bp.debito, bp.balance, bp.estado, bp.estado_credito, BIN_TO_UUID(bp.id_proveedor) as id_proveedor from balance_proveedor bp inner join proveedor p on p.id=bp.id_proveedor;"
       );
       res.json(result[0]);
-    } catch (error) {
+    } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
   };
@@ -27,7 +27,7 @@ export class SupplierBalanceController {
       );
 
       res.json(result[0]);
-    } catch (error) {
+    } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
   };
@@ -42,7 +42,7 @@ export class SupplierBalanceController {
       );
 
       res.json(result[0]);
-    } catch (error) {
+    } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
   };
@@ -57,7 +57,7 @@ export class SupplierBalanceController {
       );
 
       res.json(result[0]);
-    } catch (error) {
+    } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
   };
@@ -75,7 +75,7 @@ export class SupplierBalanceController {
     } = supplierBalance;
 
     try {
-      const [userRow] = await connection.query(
+      const [userRow]: any = await connection.query(
         "SELECT COUNT(*) as idUser FROM usuario WHERE BIN_TO_UUID(id) = ?;",
         [usuario_creador]
       );
@@ -84,7 +84,7 @@ export class SupplierBalanceController {
         return res.status(409).json({ error: "El usuario que está creando este pago o anticipo, no existe..." });
       }
 
-      const [supplierRow] = await connection.query(
+      const [supplierRow]: any = await connection.query(
         "SELECT COUNT(*) as valueSupplier FROM balance_proveedor WHERE BIN_TO_UUID(id_proveedor) = ?;",
         [id_proveedor]
       );
@@ -93,7 +93,7 @@ export class SupplierBalanceController {
         return res.status(404).json({ error: "El proveedor al que estás intentando pagar o crear anticipo, no tiene saldos pendientes..." });
       }
 
-      const [detailsRow] = await connection.query(
+      const [detailsRow]: any = await connection.query(
         "SELECT COUNT(*) as valueSupplierDetails FROM detalle_balance_proveedor WHERE BIN_TO_UUID(id_proveedor) = ?;",
         [id_proveedor]
       );
@@ -102,7 +102,7 @@ export class SupplierBalanceController {
         return res.status(404).json({ error: "El proveedor al que estás intentando pagar o crear anticipo, no tiene saldos pendientes..." });
       }
 
-      const [balanceRow] = await connection.query(
+      const [balanceRow]: any = await connection.query(
         "SELECT balance as getBalance FROM detalle_balance_proveedor WHERE id_balance_proveedor = UUID_TO_BIN(?) AND estado = 1 ORDER BY fecha_emision DESC LIMIT 1;",
         [id_balance_proveedor]
       );
@@ -152,7 +152,7 @@ export class SupplierBalanceController {
       }      
 
       res.send("La cuenta por cobrar se canceló de manera correcta...");
-    } catch (error) {
+    } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
   };
@@ -169,7 +169,7 @@ export class SupplierBalanceController {
         usuario_creador
       } = supplierBalance;
 
-      const userExists = await connection.query(
+      const userExists: any = await connection.query(
         "select count(BIN_TO_UUID(id)) as idUser from usuario where BIN_TO_UUID(id) = ?;",
         [usuario_creador]
       );
@@ -178,7 +178,7 @@ export class SupplierBalanceController {
         return res.status(409).json({ error: "El usuario que está creando este pago o anticipo, no existe..." });
       }
 
-      const result = await connection.query(
+      const result: any = await connection.query(
         "select BIN_TO_UUID(id) as id_balance_proveedor, descripcion, fecha_emision, debito, credito, balance, estado, descripcion_anulacion, BIN_TO_UUID(id_proveedor) as id_proveedor from detalle_balance_proveedor where id = UUID_TO_BIN(?);",
         [id]
       );
@@ -193,7 +193,7 @@ export class SupplierBalanceController {
         id_proveedor
       } = result[0][0];
 
-      const supplierExists = await connection.query(
+      const supplierExists: any = await connection.query(
         "select count(BIN_TO_UUID(id_proveedor)) as valueSupplier from balance_proveedor where BIN_TO_UUID(id_proveedor) = ?;",
         [id_proveedor]
       );
@@ -202,7 +202,7 @@ export class SupplierBalanceController {
         return res.status(404).json({ error: "El proveedor al que estás intentando pagar o crear un anticipo, no tiene saldos pendientes..." });
       }
 
-      const supplierDetailsExists = await connection.query(
+      const supplierDetailsExists: any = await connection.query(
         "select count(BIN_TO_UUID(id_proveedor)) as valueSupplierDetails from detalle_balance_proveedor where BIN_TO_UUID(id_proveedor) = ?;",
         [id_proveedor]
       );
@@ -221,12 +221,12 @@ export class SupplierBalanceController {
         ]
       );
 
-      const resultAllAdvanceOrPayment = await connection.query(
+      const resultAllAdvanceOrPayment: any = await connection.query(
         "select BIN_TO_UUID(id) as id, descripcion,  fecha_emision, debito, credito, balance, BIN_TO_UUID(id_proveedor) as id_proveedor, estado, descripcion_anulacion from detalle_balance_proveedor where estado = 1 and credito ='0' and id_proveedor = UUID_TO_BIN(?) ORDER BY fecha_emision;",
         [id_proveedor]
       );
 
-      const resultDataSupplierBalance = await connection.query(
+      const resultDataSupplierBalance: any = await connection.query(
         "select balance as getBalance from detalle_balance_proveedor where BIN_TO_UUID(id_proveedor) = ? order by fecha_emision asc LIMIT 1;",
         [id_proveedor]
       );
@@ -260,7 +260,7 @@ export class SupplierBalanceController {
       );
       
       return res.send("El anticipo o pago se anuló correctamente...");
-    } catch (error) {
+    } catch (error: any) {
       return res.status(500).json({ error: error.message });
     }
   };

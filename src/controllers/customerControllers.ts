@@ -10,7 +10,7 @@ export class CustomerTypeController {
         "select BIN_TO_UUID(c.id) as id, LPAD(c.codigo_cliente, 10, '0') AS codigo_cliente, c.cedula_cliente, c.nombre_cliente, c.telefono_cliente, c.celular_cliente, c.correo_cliente, c.direccion_cliente, c.ruc, c.contacto, c.estado, c.termino_venta, c.limite_credito, c.fecha_creacion, c.fecha_modificacion, BIN_TO_UUID(c.usuario_creador) as usuario_creador, BIN_TO_UUID(c.usuario_modificador) as usuario_modificador, coalesce(uc.nombre_usuario, '') as nombre_usuario_creador, coalesce(um.nombre_usuario, '') as nombre_usuario_modificador from cliente c left join usuario uc on uc.id=c.usuario_creador left join usuario um on um.id=c.usuario_modificador order by codigo_cliente desc;"
       );
       res.json(result[0]);
-    } catch (error) {
+    } catch (error: any) {
        res.status(500).json({ error: error.message });
     }
   };
@@ -25,7 +25,7 @@ export class CustomerTypeController {
       );
 
       res.json(result[0]);
-    } catch (error) {
+    } catch (error: any) {
        res.status(500).json({ error: error.message });
     }
   };
@@ -54,7 +54,7 @@ export class CustomerTypeController {
         "select count(BIN_TO_UUID(id)) as idUser from usuario where BIN_TO_UUID(id) = ?;",
         [usuario_creador]
       );
-      const [{ idUser }] = userExists[0];
+      const [{ idUser }] = (userExists as any)[0];
       if (idUser === 0) {
         const error = new Error("El usuario que esta intentando guardar el cliente no existe ne la base de datos");
         return res.status(409).json({ error: error.message });
@@ -64,7 +64,7 @@ export class CustomerTypeController {
         "select count(nombre_cliente) as nameExists from cliente where nombre_cliente = ?;",
         [nombre_cliente]
       );
-      const [{ nameExists }] = supplierExists[0];
+      const [{ nameExists }] = (supplierExists as any)[0];
       if (nameExists === 1) {
         const error = new Error(
           "Este cliente ya existen en la base de datos..."
@@ -91,7 +91,7 @@ export class CustomerTypeController {
       );
 
       res.send("Cliente creado correctamente...");
-    } catch (error) {
+    } catch (error: any) {
        res.status(500).json({ error: error.message });
     }
   };
@@ -121,7 +121,7 @@ export class CustomerTypeController {
         "select count(BIN_TO_UUID(id)) as idUser from usuario where BIN_TO_UUID(id) = ?;",
         [usuario_modificador]
       );
-      const [{ idUser }] = userExists[0];
+      const [{ idUser }] = (userExists as any)[0];
       if (idUser === 0) {
         const error = new Error("El usuario que esta intentando modificar el cliente no existe en la base de datos");
         return res.status(409).json({ error: error.message });
@@ -159,7 +159,7 @@ export class CustomerTypeController {
       );    
 
       res.send("El cliente se modifico correctamente...");
-    } catch (error) {
+    } catch (error: any) {
        res.status(500).json({ error: error.message });
     }
   };
@@ -174,7 +174,7 @@ export class CustomerTypeController {
       );
 
       res.send("El cliente se elimino correctamente...");
-    } catch (error) {
+    } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
   };

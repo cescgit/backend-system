@@ -10,7 +10,7 @@ export class SalesQuoteController {
                 "select BIN_TO_UUID(cv.id) as id, LPAD(cv.numero_cotizacion, 10, '0') AS numero_cotizacion, cv.termino, cv.observaciones, cv.subtotal, cv.total, cv.dias, cv.fecha_finalizacion, cv.estado, cv.prefacturacion, cv.facturacion, cv.impuesto_manual, BIN_TO_UUID(cl.id) as id_cliente, cl.nombre_cliente as cliente, cv.fecha_creacion, coalesce(uc.nombre_usuario, '') as nombre_usuario_creador, coalesce(um.nombre_usuario, '') as nombre_usuario_modificador from cotizacion_venta cv inner join cliente cl on cl.id=cv.id_cliente left join usuario uc on uc.id=cv.usuario_creador left join usuario um on um.id=cv.usuario_modificador order by cv.numero_cotizacion desc;"
             );
             res.json(result[0]);
-        } catch (error) {
+        } catch (error: any) {
             res.status(500).json({ error: error.message });
         }
     };
@@ -24,7 +24,7 @@ export class SalesQuoteController {
                 [id]
             );
             res.json(result[0]);
-        } catch (error) {
+        } catch (error: any) {
             res.status(500).json({ error: error.message })
         }
     }
@@ -48,18 +48,18 @@ export class SalesQuoteController {
         } = salesQuote;
 
         try {
-            const userExists = await connection.query(
+            const [userExists]: any = await connection.query(
                 "select count(BIN_TO_UUID(id)) as idUser from usuario where BIN_TO_UUID(id) = ?;",
                 [usuario_creador]
             );
-            const [{ idUser }] = userExists[0];
+            const [{ idUser }] = userExists;
             if (idUser === 0) {
                 const error = new Error("El usuario que esta intentando crear esta cotización no existe en la base de datos...");
                 return res.status(409).json({ error: error.message });
             }
 
-            const uuId = await connection.query("select UUID() as getIdSalesQuote;")
-            const [{ getIdSalesQuote }] = uuId[0];
+            const [uuId]: any = await connection.query("select UUID() as getIdSalesQuote;");
+            const [{ getIdSalesQuote }] = uuId;
 
             await connection.query(
                 "insert into cotizacion_venta (id, termino, observaciones, subtotal, total, dias, fecha_finalizacion, estado, prefacturacion, facturacion, impuesto_manual, id_cliente, usuario_creador, fecha_creacion) values(UUID_TO_BIN(?), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, UUID_TO_BIN(?), UUID_TO_BIN(?), now())",
@@ -94,7 +94,7 @@ export class SalesQuoteController {
                 );
             }
             res.send("La cotización se creo correctamente...");
-        } catch (error) {
+        } catch (error: any) {
             res.status(500).json({ error: error.message });
         }
     };
@@ -119,28 +119,23 @@ export class SalesQuoteController {
             usuario_modificador,
         } = salesQuote;
 
-        await connection.beginTransaction(async (errorMessage: any) => {
-            if (errorMessage) {
-                return res.status(500).json({ error: errorMessage.message });
-            }
-        })
-
+        await connection.beginTransaction();
         try {
-            const userExists = await connection.query(
+            const [userExists2]: any = await connection.query(
                 "select count(BIN_TO_UUID(id)) as idUser from usuario where BIN_TO_UUID(id) = ?;",
                 [usuario_modificador]
             );
-            const [{ idUser }] = userExists[0];
-            if (idUser === 0) {
+            const [{ idUser: idUser2 }] = userExists2;
+            if (idUser2 === 0) {
                 const error = new Error("El usuario que esta intentando modificar esta cotización no existe en la base de datos...");
                 return res.status(409).json({ error: error.message });
             }
 
-            const salesQuoteExists = await connection.query(
+            const [salesQuoteExists]: any = await connection.query(
                 "select count(numero_cotizacion) as numberSalesQuote from cotizacion_venta where numero_cotizacion = ? and BIN_TO_UUID(id) != ?;",
                 [numero_cotizacion, id]
             );
-            const [{ numberSalesQuote }] = salesQuoteExists[0];
+            const [{ numberSalesQuote }] = salesQuoteExists;
             if (numberSalesQuote === 1) {
                 const error = new Error(
                     "Esta cotización se encuentra registrado en la base de datos..."
@@ -166,12 +161,12 @@ export class SalesQuoteController {
                 ]
             );
 
-            const getProductDetailsSalesQuote = await connection.query(
+            const [getProductDetailsSalesQuote]: any = await connection.query(
                 "select BIN_TO_UUID(id_producto) as id_producto from detalle_cotizacion_venta where id_cotizacion_venta = UUID_TO_BIN(?);",
                 [id]
-            );                      
+            );
 
-            for (const idProductDelete of getProductDetailsSalesQuote[0]) {                
+            for (const idProductDelete of getProductDetailsSalesQuote) {                
                 await connection.query(
                     "delete from detalle_cotizacion_venta where id_cotizacion_venta = UUID_TO_BIN(?) and id_producto = UUID_TO_BIN(?);",
                     [id, idProductDelete.id_producto]
@@ -180,12 +175,12 @@ export class SalesQuoteController {
 
             for (const detallesCotizacionVenta of detalle_cotizacion_venta) {
                 try {
-                    const getAmountByProductInventoryResults = await connection.query(
+                    const [getAmountByProductInventoryResults]: any = await connection.query(
                         "select stock from inventario where BIN_TO_UUID(id_producto) = ?;",
                         [detallesCotizacionVenta.id_producto]
                     );
 
-                    const [{ stock }] = getAmountByProductInventoryResults[0];
+                    const [{ stock }] = getAmountByProductInventoryResults;
 
                     if (detallesCotizacionVenta.cantidad > stock) {
                         const error = new Error("No se pueden agregar más cantidad de este producto, ya que no dispones en tu inventario...");
@@ -204,13 +199,15 @@ export class SalesQuoteController {
                         ]
                     );
 
-                } catch (error) {                    
+                } catch (error: any) {                    
                     return res.status(404).json({ error: error.message });
                 }
             }
 
             res.send("La cotización se modifico correctamente...");
-        } catch (error) {
+            await connection.commit();
+        } catch (error: any) {
+            await connection.rollback();
             res.status(500).json({ error: error.message });
         }
     };
@@ -219,11 +216,11 @@ export class SalesQuoteController {
     static cancelSalesQuote = async (req: Request, res: Response) => {
         const { idSalesQuote } = req.params;
         try {
-            const existsSalesQuote = await connection.query(
+            const [existsSalesQuote]: any = await connection.query(
                 "select count(BIN_TO_UUID(id)) as id from cotizacion_venta where BIN_TO_UUID(id) = ?;",
                 [idSalesQuote]
             );
-            const [{ id }] = existsSalesQuote[0];
+            const [{ id }] = existsSalesQuote;
 
             if (id === 0) {
                 const error = new Error(
@@ -238,7 +235,7 @@ export class SalesQuoteController {
             );
 
             res.send("La cotización se anulo correctamente...");
-        } catch (error) {
+        } catch (error: any) {
             res.status(500).json({ error: error.message });
         }
     };
@@ -247,13 +244,13 @@ export class SalesQuoteController {
     static reactivateSalesQuote = async (req: Request, res: Response) => {
         const { idSalesQuote } = req.params;
         try {
-            const existsSalesQuote = await connection.query(
+            const [existsSalesQuote2]: any = await connection.query(
                 "select count(BIN_TO_UUID(id)) as id from cotizacion_venta where BIN_TO_UUID(id) = ?;",
                 [idSalesQuote]
             );
-            const [{ id }] = existsSalesQuote[0];
+            const [{ id: id2 }] = existsSalesQuote2;
 
-            if (id === 0) {
+            if (id2 === 0) {
                 const error = new Error(
                     "La cotización que estas buscando, no se encontro..."
                 );
@@ -266,7 +263,7 @@ export class SalesQuoteController {
             );
 
             res.send("La cotización se reactivo correctamente...");
-        } catch (error) {
+        } catch (error: any) {
             res.status(500).json({ error: error.message });
         }
     };

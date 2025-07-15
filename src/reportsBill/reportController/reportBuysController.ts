@@ -37,7 +37,7 @@ export class reportBuysController {
         celular_empresa,
         correo_empresa,
         logotipo
-      } = resultDataCompany[0][0];
+      } = (resultDataCompany[0] as any)[0];
 
       const {
         numero_factura_proveedor,
@@ -51,7 +51,7 @@ export class reportBuysController {
         total,
         subtotal,
         ruc: ruc_prov,
-      } = resultBuys[0][0];;
+      } = (resultBuys[0] as any)[0];
 
       const {
         porcentaje,
@@ -61,7 +61,7 @@ export class reportBuysController {
 
       const tableBody = [
         ["Cantidad", "Producto", "Precio U.", "Valor"],
-        ...detalles.map((item: any) => [
+        ...(detalles as any).map((item: any) => [
           { text: item.cantidad, style: "center" },
           item.nombre_producto,
           formatCurrency(item.precio_compra),
@@ -100,7 +100,7 @@ export class reportBuysController {
             },
           ],
           margin: [20, 20, 20, 20],
-          height: 150
+          //height: 150
         },
         footer: function (currentPage: number, pageCount: number) {
           return {
@@ -232,7 +232,7 @@ export class reportBuysController {
         res.end(buffer);
       });
 
-    } catch (error) {
+    } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
   }

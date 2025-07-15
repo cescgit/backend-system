@@ -11,7 +11,7 @@ export class PermissionsController {
         "select count(BIN_TO_UUID(id)) as valueUser from usuario where BIN_TO_UUID(id) = ?;",
         [id]
       );
-      const [{ valueUser }] = usuarioExists[0];
+      const [{ valueUser }] = (usuarioExists as any)[0];
 
       if (valueUser === 0) {
         const error = new Error(
@@ -24,7 +24,7 @@ export class PermissionsController {
         "select count(empresa or usuario or proveedor or cliente or marca or categoria or producto or inventario or remisiones or compra or producto_apartado or devolucion_compra or cotizacion_venta or prefacturacion or venta or devolucion_venta or  kardex or reportes_inventario or cuenta_corriente or cuenta_xpagar or cuenta_xcobrar or contabilidad or reportes) as permissionsValue  from permisos where BIN_TO_UUID(id_usuario) = ?;",
         [id]
       );
-      const [{ permissionsValue }] = permissionsExists[0];
+      const [{ permissionsValue }] = (permissionsExists as any)[0];
 
       if (permissionsValue === 0) {
         const error = new Error(
@@ -41,7 +41,7 @@ export class PermissionsController {
       const resultPermissions = result[0]
 
       res.json(resultPermissions);
-    } catch (error) {
+    } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
   };
@@ -102,7 +102,7 @@ export class PermissionsController {
         "select count(BIN_TO_UUID(id)) as idUserDataBase from usuario where BIN_TO_UUID(id) = ?;",
         [idUser]
       );
-      const [{ idUserDataBase }] = userExists[0];
+      const [{ idUserDataBase }] = (userExists as any)[0];
       if (idUserDataBase === 0) {
         const error = new Error("El usuario no se encuentra registrado en la base de datos...");
         return res.status(409).json({ error: error.message }); 4
@@ -112,7 +112,7 @@ export class PermissionsController {
         "select count(empresa or usuario or proveedor or cliente or marca or categoria or producto or inventario or remisiones or compra or devolucion_compra or producto_apartado or cotizacion_venta or prefacturacion or venta or devolucion_venta or  kardex or reportes_inventario or cuenta_corriente or cuenta_xpagar or cuenta_xcobrar or contabilidad or reportes) as permissionsValue from permisos where BIN_TO_UUID(id_usuario) = ?;",
         [idUser]
       );
-      const [{ permissionsValue }] = permissionsExists[0];
+      const [{ permissionsValue }] = (permissionsExists as any)[0];
 
       if (permissionsValue === 0) {
         await connection.query(
@@ -219,7 +219,7 @@ export class PermissionsController {
 
         res.send("Los permisos se modificaron correctamente...");
       }
-    } catch (error) {
+    } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
   };

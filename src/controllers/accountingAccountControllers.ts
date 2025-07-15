@@ -13,7 +13,7 @@ export class AccountingAccountController {
         "select BIN_TO_UUID(cc.id) as id, cc.numero_cuenta, cc.descripcion, cc.nivel_cuenta, cc.ruc, cc.centro_costo, cc.balance, BIN_TO_UUID(cc.tipo_cuenta) as id_tipo_cuenta, tc.nombre as tipo_cuenta, cc.fecha_creacion from cuenta_contable cc inner join tipo_cuenta tc on cc.tipo_cuenta=tc.id order by cc.numero_cuenta;"
       );
       res.json(result[0]);
-    } catch (error) {
+    } catch (error: any) {
        res.status(500).json({ error: error.message });
     }
   };
@@ -28,7 +28,7 @@ export class AccountingAccountController {
       );
 
       res.json(result[0]);
-    } catch (error) {
+    } catch (error: any) {
        res.status(500).json({ error: error.message });
     }
   };
@@ -50,31 +50,31 @@ export class AccountingAccountController {
     accountingAccount;
 
     try {
-      const userExists = await connection.query(
-        "select count(BIN_TO_UUID(id)) as idUser from usuario where BIN_TO_UUID(id) = ?;",
-        [usuario_creador]
+      const [userExists]: any = await connection.query(
+        "SELECT COUNT(*) as idUser FROM usuario WHERE BIN_TO_UUID(id) = ?;",
+        [req.body.usuario_creador]
       );
-      const [{ idUser }] = userExists[0];
+      const [{ idUser }] = userExists;
       if (idUser === 0) {
         const error = new Error("El usuario que esta creando esta cuenta contable, no existe...");
         return res.status(409).json({ error: error.message });
       }
 
-      const typeAccountExists = await connection.query(
-        "select count(BIN_TO_UUID(id)) as idTypeAccount from tipo_cuenta where BIN_TO_UUID(id) = ?;",
-        [tipo_cuenta]
+      const [typeAccountExists]: any = await connection.query(
+        "SELECT id as idTypeAccount FROM tipo_cuenta WHERE nombre_tipo_cuenta = ?;",
+        [req.body.nombre_tipo_cuenta]
       );
-      const [{ idTypeAccount }] = typeAccountExists[0];
+      const [{ idTypeAccount }] = typeAccountExists;
       if (idTypeAccount === 0) {
         const error = new Error("El tipo de cuenta no existe...");
         return res.status(409).json({ error: error.message });
       }
 
-      const accountExists = await connection.query(
-        "select count(numero_cuenta) as valueNumberAccount from cuenta_contable where numero_cuenta = ?;",
-        [numero_cuenta]
+      const [accountExists]: any = await connection.query(
+        "SELECT COUNT(*) as valueNumberAccount FROM cuenta_contable WHERE numero_cuenta = ?;",
+        [req.body.numero_cuenta]
       );
-      const [{ valueNumberAccount }] = accountExists[0];
+      const [{ valueNumberAccount }] = accountExists;
       if (valueNumberAccount === 1) {
         const error = new Error("Esta cuenta contable ya existen en la base de datos...");
         return res.status(409).json({ error: error.message });
@@ -86,7 +86,7 @@ export class AccountingAccountController {
       );
 
       res.send("La cuenta contable fue creada correctamente...");
-    } catch (error) {
+    } catch (error: any) {
        res.status(500).json({ error: error.message });
     }
   };
@@ -109,31 +109,31 @@ export class AccountingAccountController {
     accountingAccount;
 
     try {
-      const userExists = await connection.query(
-        "select count(BIN_TO_UUID(id)) as idUser from usuario where BIN_TO_UUID(id) = ?;",
-        [usuario_modificador]
+      const [userExists2]: any = await connection.query(
+        "SELECT COUNT(*) as idUser FROM usuario WHERE BIN_TO_UUID(id) = ?;",
+        [req.body.usuario_modificador]
       );
-      const [{ idUser }] = userExists[0];
-      if (idUser === 0) {
+      const [{ idUser: idUser2 }] = userExists2;
+      if (idUser2 === 0) {
         const error = new Error("El usuario que esta editando esta cuenta contable no existe...");
         return res.status(409).json({ error: error.message });
       }
 
-      const typeAccountExists = await connection.query(
-        "select count(BIN_TO_UUID(tipo_cuenta)) as idTypeAccount from tipo_cuenta where BIN_TO_UUID(id) = ?;",
-        [tipo_cuenta]
+      const [typeAccountExists2]: any = await connection.query(
+        "SELECT id as idTypeAccount FROM tipo_cuenta WHERE nombre_tipo_cuenta = ?;",
+        [req.body.nombre_tipo_cuenta]
       );
-      const [{ idTypeAccount }] = typeAccountExists[0];
-      if (idTypeAccount === 0) {
+      const [{ idTypeAccount: idTypeAccount2 }] = typeAccountExists2;
+      if (idTypeAccount2 === 0) {
         const error = new Error("El tipo de cuenta no existe...");
         return res.status(409).json({ error: error.message });
       }
 
-      const accountingAccountExists = await connection.query(
-        "select count(BIN_TO_UUID(id)) as idAccountingAccount from cuenta_contable where BIN_TO_UUID(id) = ?;",
-        [id]
+      const [accountingAccountExists]: any = await connection.query(
+        "SELECT id as idAccountingAccount FROM cuenta_contable WHERE numero_cuenta = ?;",
+        [req.body.numero_cuenta]
       );
-      const [{ idAccountingAccount }] = accountingAccountExists[0];
+      const [{ idAccountingAccount }] = accountingAccountExists;
       if (idAccountingAccount === 0) {
         const error = new Error(
           "La cuenta contable que estas buscando, no se encontro..."
@@ -141,12 +141,12 @@ export class AccountingAccountController {
         return res.status(404).json({ error: error.message });
       }
 
-      const accountExists = await connection.query(
-        "select count(numero_cuenta) as valueNumberAccount from cuenta_contable where numero_cuenta = ? and BIN_TO_UUID(id) = ?;",
-        [numero_cuenta, id]
+      const [accountExists2]: any = await connection.query(
+        "SELECT COUNT(*) as valueNumberAccount FROM cuenta_contable WHERE numero_cuenta = ?;",
+        [req.body.numero_cuenta]
       );
-      const [{ valueNumberAccount }] = accountExists[0];
-      if (valueNumberAccount === 1) {
+      const [{ valueNumberAccount: valueNumberAccount2 }] = accountExists2;
+      if (valueNumberAccount2 === 1) {
         const error = new Error("Esta cuenta contable ya existen en la base de datos...");
         return res.status(409).json({ error: error.message });
       }
@@ -157,7 +157,7 @@ export class AccountingAccountController {
       );
 
       res.send("La cuenta contable se modifico correctamente...");
-    } catch (error) {
+    } catch (error: any) {
        res.status(500).json({ error: error.message });
     }
   };

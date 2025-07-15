@@ -42,7 +42,7 @@ export class reportPurchaseReturnController {
                 "select nombre_empresa, eslogan, direccion_empresa, ruc, telefono_empresa, celular_empresa, correo_empresa, logotipo from empresa;"
             )
 
-            for (const dataCompany of resultDataCompany[0]) {
+            for (const dataCompany of (resultDataCompany[0] as any)) {
 
                 const {
                     nombre_empresa,
@@ -106,7 +106,7 @@ export class reportPurchaseReturnController {
                 .text("REPORTE DEVOLUCIÓN DE COMPRA", 10, 90, { align: "center" })
                 .moveDown();
 
-            for (const dataPurchaseReturn of resultPurchaseReturn[0]) {
+            for (const dataPurchaseReturn of (resultPurchaseReturn[0] as any)) {
 
                 const {
                     numero_factura_proveedor,
@@ -224,7 +224,7 @@ export class reportPurchaseReturnController {
             };
             await doc.table(tableDetailsBuys, optionsDetailsBuys);
 
-            function calculateTableHeight(tableDetails) {
+            function calculateTableHeight(tableDetails: any) {
                 const rowHeight = 20;  // Altura estimada por cada fila (puedes ajustarlo según el tamaño de la fuente)
                 const headerHeight = 30;  // Altura de la cabecera de la tabla
 
@@ -242,11 +242,11 @@ export class reportPurchaseReturnController {
             const pageWidth = doc.page.width;
             const xPosition = pageWidth - marginRight
 
-            function calculateTax(subtotal, tax) {
+            function calculateTax(subtotal: number, tax: number) {
                 return (subtotal * tax) / 100;
             }
 
-            const resultTax = calculateTax(resultPurchaseReturn[0][0].subtotal, resultPurchaseReturn[0][0].valor_cantidad);
+            const resultTax = calculateTax((resultPurchaseReturn[0] as any)[0].subtotal, (resultPurchaseReturn[0] as any)[0].valor_cantidad);
 
             doc
                 .fontSize(9)
@@ -256,7 +256,7 @@ export class reportPurchaseReturnController {
 
             doc
                 .font(fontRegular)
-                .text(formatCurrency(resultPurchaseReturn[0][0].subtotal), xPosition + 60, tableHeight + 10)
+                .text(formatCurrency((resultPurchaseReturn[0] as any)[0].subtotal), xPosition + 60, tableHeight + 10)
 
             doc
                 .fontSize(9)
@@ -276,7 +276,7 @@ export class reportPurchaseReturnController {
 
             doc
                 .font(fontRegular)
-                .text(formatCurrency(resultPurchaseReturn[0][0].total), xPosition + 60, tableHeight + 40)
+                .text(formatCurrency((resultPurchaseReturn[0] as any)[0].total), xPosition + 60, tableHeight + 40)
 
             doc.lineWidth(0.5)
             doc
@@ -297,7 +297,7 @@ export class reportPurchaseReturnController {
             doc
                 .fontSize(9)
                 .font(fontRegular)
-                .text(resultPurchaseReturn[0][0].observaciones, 15, yPosition + 12);
+                .text((resultPurchaseReturn[0] as any)[0].observaciones, 15, yPosition + 12);
 
             doc.lineWidth(0.5)
             doc
@@ -317,7 +317,7 @@ export class reportPurchaseReturnController {
 
             doc.pipe(res);
             doc.end();
-        } catch (error) {
+        } catch (error: any) {
             res.status(500).json({ error: error.message });
         }
     }

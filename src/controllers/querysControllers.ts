@@ -9,7 +9,7 @@ export class QuerysController {
             "select logotipo from empresa;"
           );
           res.json(result[0]);
-        } catch (error) {
+        } catch (error: any) {
           res.status(500).json({error: error.message});
         }
       }

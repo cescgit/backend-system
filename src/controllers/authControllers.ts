@@ -15,7 +15,7 @@ export class AuthController {
         "select count(token) as tokenExpired from token where token = ?;",
         [token]
       );
-      const [{ tokenExpired }] = expiredToken[0];
+      const [{ tokenExpired }] = (expiredToken as any)[0];
       if (tokenExpired === 0) {
         const error = new Error("EL token ya expiro, vuelva a solicitar otro código...");
         return res.status(404).json({ error: error.message });
@@ -25,7 +25,7 @@ export class AuthController {
         "select count(token) as valueToken from token where token = ?;",
         [token]
       );
-      const [{ valueToken }] = tokenExists[0];
+      const [{ valueToken }] = (tokenExists as any)[0];
       if (valueToken === 0) {
         const error = new Error("Token no válido");
         return res.status(401).json({ error: error.message });
@@ -36,7 +36,7 @@ export class AuthController {
         [token]
       );
 
-      const [{ idToken, resultIdUser }] = data[0];
+      const [{ idToken, resultIdUser }] = (data as any)[0];
       const confirmacion = 1;
 
       const updateUser = await connection.query(
@@ -49,7 +49,7 @@ export class AuthController {
       );
 
       res.send("Cuenta confirmada correctamente...");
-    } catch (error) {
+    } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
   };
@@ -63,7 +63,7 @@ export class AuthController {
         "select count(id) as idvalue from usuario where correo_usuario = ?",
         [correo_usuario]
       );
-      const [{ idvalue }] = userExists[0];
+      const [{ idvalue }] = (userExists as any)[0];
       if (idvalue === 0) {
         const error = new Error("Usuario no encontrado");
         return res.status(404).json({ error: error.message });
@@ -73,13 +73,13 @@ export class AuthController {
         "select BIN_TO_UUID(id) as id, nombre_usuario, password as userPassword from usuario where correo_usuario = ?;",
         [correo_usuario]
       );
-      const [{ id, nombre_usuario, userPassword }] = idUser[0];
+      const [{ id, nombre_usuario, userPassword }] = (idUser as any)[0];
 
       const userConfirm = await connection.query(
         "select confirmacion from usuario where BIN_TO_UUID(id) = ?",
         [id]
       );
-      const [{ confirmacion }] = userConfirm[0];
+      const [{ confirmacion }] = (userConfirm as any)[0];
 
 
       const newToken = generateToken();
@@ -111,7 +111,7 @@ export class AuthController {
         "select estado from usuario where BIN_TO_UUID(id) = ?;",
         [id]
       );
-      const [{ estado }] = permissionsExists[0];
+      const [{ estado }] = (permissionsExists as any)[0];
 
       if (estado === 0) {
         const error = new Error(
@@ -124,7 +124,7 @@ export class AuthController {
         "select count(empresa or usuario or proveedor or cliente or marca or categoria or producto or remisiones or inventario or compra or devolucion_compra or cotizacion_venta or prefacturacion or venta or devolucion_venta or  kardex or reportes_inventario or cuenta_corriente or cuenta_xpagar or cuenta_xcobrar or contabilidad or reportes) as permissionsValue  from permisos where BIN_TO_UUID(id_usuario) = ?;",
         [id]
       );
-      const [{ permissionsValue }] = statement[0];
+      const [{ permissionsValue }] = (statement as any)[0];
 
       if (permissionsValue === 0) {
         const error = new Error(
@@ -166,7 +166,7 @@ export class AuthController {
       const jwtToken = generateJWT({ id: id });
 
       res.send(jwtToken);
-    } catch (error) {
+    } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
   };
@@ -179,7 +179,7 @@ export class AuthController {
         "select count(BIN_TO_UUID(id)) as idvalue from usuario where correo_usuario = ?;",
         [correo_usuario]
       );
-      const [{ idvalue }] = userExists[0];
+      const [{ idvalue }] = (userExists as any)[0];
       if (idvalue === 0) {
         const error = new Error("Usuario no esta registrado");
         return res.status(404).json({ error: error.message });
@@ -189,14 +189,14 @@ export class AuthController {
         "select BIN_TO_UUID(id) as id, nombre_usuario from usuario where correo_usuario = ?;",
         [correo_usuario]
       );
-      const [{ id, nombre_usuario }] = idUser[0];
+      const [{ id, nombre_usuario }] = (idUser as any)[0];
 
       const userConfirm = await connection.query(
         "select confirmacion from usuario where BIN_TO_UUID(id) = ?",
         [id]
       );
 
-      const [{ confirmacion }] = userConfirm[0];
+      const [{ confirmacion }] = (userConfirm as any)[0];
       if (confirmacion === 1) {
         const error = new Error("Su cuenta ya se encuentra confirmada...");
         return res.status(403).json({ error: error.message });
@@ -215,7 +215,7 @@ export class AuthController {
       });
 
       res.send("Se envio un nuevo token a tu correo");
-    } catch (error) {
+    } catch (error: any) {
       res.status(500).json({ error: "Hubo un error" });
     }
   };
@@ -229,7 +229,7 @@ export class AuthController {
         [correo_usuario]
       );
 
-      const [{ idvalue }] = userExists[0];
+      const [{ idvalue }] = (userExists as any)[0];
       if (idvalue === 0) {
         const error = new Error("Usuario no esta registrado");
         return res.status(404).json({ error: error.message });
@@ -239,7 +239,7 @@ export class AuthController {
         "select BIN_TO_UUID(id) as id, nombre_usuario from usuario where correo_usuario = ?;",
         [correo_usuario]
       );
-      const [{ id, nombre_usuario }] = idUser[0];
+      const [{ id, nombre_usuario }] = (idUser as any)[0];
 
       const newToken = generateToken();
       const stateConfirmation = 0;
@@ -256,7 +256,7 @@ export class AuthController {
       });
 
       res.send("Revisa tu correo para seguir las instrucciones");
-    } catch (error) {
+    } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
   };
@@ -270,13 +270,13 @@ export class AuthController {
         [token]
       );
 
-      const [{ tokenvalue }] = tokenExists[0];
+      const [{ tokenvalue }] = (tokenExists as any)[0];
       if (tokenvalue === 0) {
         const error = new Error("Token no válido");
         return res.status(401).json({ error: error.message });
       }
       res.send("Token válido, define tu nueva conttraseña...");
-    } catch (error) {
+    } catch (error: any) {
       res.status(500).json({ error: "Hubo un error" });
     }
   };
@@ -290,7 +290,7 @@ export class AuthController {
         [token]
       );
 
-      const [{ tokenValue }] = tokenExists[0];
+      const [{ tokenValue }] = (tokenExists as any)[0];
       if (tokenValue === 0) {
         const error = new Error("Token no válido");
         return res.status(401).json({ error: error.message });
@@ -302,7 +302,7 @@ export class AuthController {
       );
 
       const newPassword = await hashPassword(req.body.password);
-      const [{ id_usuario }] = idUserToken[0];
+      const [{ id_usuario }] = (idUserToken as any)[0];
 
       const result = await connection.query(
         "update usuario set password = ? where BIN_TO_UUID(id) = ?;",
@@ -314,7 +314,7 @@ export class AuthController {
       );
 
       res.send("La contraseña se modifico correctamente...");
-    } catch (error) {
+    } catch (error: any) {
       res.status(500).json({ error: "Hubo un error" });
     }
   };
@@ -326,7 +326,7 @@ export class AuthController {
         "update from dispositivo_usuario where sesion_activa = 0;",
         [id]
       );
-    } catch (error) {
+    } catch (error: any) {
       res.status(500).json({ error: "Hubo un error" });
     }
   };

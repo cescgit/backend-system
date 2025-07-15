@@ -27,7 +27,7 @@ export class CustomerBalanceController {
         LIMIT 1000;`
       );
       res.json(result[0]);
-    } catch (error) {
+    } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
   };
@@ -62,7 +62,7 @@ export class CustomerBalanceController {
       );
 
       res.json(result[0]);
-    } catch (error) {
+    } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
   };
@@ -96,7 +96,7 @@ export class CustomerBalanceController {
       );
 
       res.json(result[0]);
-    } catch (error) {
+    } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
   };
@@ -125,7 +125,7 @@ export class CustomerBalanceController {
       );
 
       res.json(result[0]);
-    } catch (error) {
+    } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
   };
@@ -163,26 +163,26 @@ export class CustomerBalanceController {
         )
       ]);
 
-      const [{ idUser }] = userExists[0];
+      const [{ idUser }] = (userExists as any)[0];
       if (idUser === 0) {
         return res.status(409).json({ error: "El usuario que está creando este pago o anticipo, no existe..." });
       }
 
-      const [{ valueCustomer }] = customerExists[0];
+      const [{ valueCustomer }] = (customerExists as any)[0];
       if (valueCustomer === 0) {
         return res.status(404).json({ error: "El cliente al que estás intentando pagar o crear anticipo, no tiene saldos pendientes..." });
       }
 
-      const [{ valueCustomerDetails }] = customerDetailsExists[0];
+      const [{ valueCustomerDetails }] = (customerDetailsExists as any)[0];
       if (valueCustomerDetails === 0) {
         return res.status(404).json({ error: "El cliente al que estás intentando pagar o crear anticipo, no tiene saldos pendientes..." });
       }
 
-      if (!currentBalance[0] || !currentBalance[0][0]) {
+      if (!currentBalance[0] || (currentBalance as any)[0][0]) {
         return res.status(404).json({ error: "No se encontró el balance actual del cliente." });
       }
 
-      const [{ getBalance }] = currentBalance[0];
+      const [{ getBalance }] = (currentBalance as any)[0];
 
       if (+debito > +getBalance) {
         return res.status(400).json({ error: "El monto a pagar o anticipar, no puede ser mayor al saldo del proveedor..." });
@@ -229,12 +229,12 @@ export class CustomerBalanceController {
           res.send("La cuenta por cobrar se cancelo de manera correcta...");
         }
 
-      } catch (error) {
+      } catch (error: any) {
         await connection.rollback();
         throw error;
       }
 
-    } catch (error) {
+    } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
   };
@@ -274,12 +274,12 @@ export class CustomerBalanceController {
         )
       ]);
 
-      const [{ idUser }] = userExists[0];
+      const [{ idUser }] = (userExists as any)[0];
       if (idUser === 0) {
         return res.status(409).json({ error: "El usuario que está creando este pago o anticipo, no existe..." });
       }
 
-      if (!detailResult[0] || !detailResult[0][0]) {
+      if (!detailResult[0] || !(detailResult as any)[0][0]) {
         return res.status(404).json({ error: "No se encontró el detalle del balance del cliente." });
       }
 
@@ -287,7 +287,7 @@ export class CustomerBalanceController {
         debito,
         balance,
         id_cliente
-      } = detailResult[0][0];
+      } = (detailResult as any)[0][0];
 
       // Optimización: Validar cliente y detalles en paralelo
       const [customerExists, customerDetailsExists] = await Promise.all([
@@ -301,12 +301,12 @@ export class CustomerBalanceController {
         )
       ]);
 
-      const [{ valueCustomer }] = customerExists[0];
+      const [{ valueCustomer }] = (customerExists as any)[0];
       if (valueCustomer === 0) {
         return res.status(404).json({ error: "El cliente al que estás intentando pagar o crear un anticipo, no tiene saldos pendientes..." });
       }
 
-      const [{ valueCustomerDetails }] = customerDetailsExists[0];
+      const [{ valueCustomerDetails }] = (customerDetailsExists as any)[0];
       if (valueCustomerDetails === 0) {
         return res.status(404).json({ error: "El cliente al que estás intentando pagar o crear un anticipo, no tiene saldos pendientes..." });
       }
@@ -344,16 +344,16 @@ export class CustomerBalanceController {
           )
         ]);
 
-        if (!resultDataCustomerBalance[0] || !resultDataCustomerBalance[0][0]) {
+        if (!resultDataCustomerBalance[0] || !(resultDataCustomerBalance as any)[0][0]) {
           await connection.rollback();
           return res.status(404).json({ error: "No se encontró el balance del cliente." });
         }
 
-        let { getBalance } = resultDataCustomerBalance[0][0];
+        let { getBalance } = (resultDataCustomerBalance as any)[0][0];
         let currentBalance = getBalance;
 
         // Optimización: Usar batch update en lugar de actualizaciones individuales
-        const updatePromises = resultAllAdvanceOrPayment[0].map(detallesVenta => {
+        const updatePromises = (resultAllAdvanceOrPayment[0] as any[]).map((detallesVenta: any) => {
           const newBalanceCustomer = currentBalance - parseFloat(detallesVenta.debito);
           currentBalance = newBalanceCustomer;
           
@@ -373,12 +373,12 @@ export class CustomerBalanceController {
         await connection.commit();
         res.send("El anticipo o pago se anuló correctamente.");
 
-      } catch (error) {
+      } catch (error: any) {
         await connection.rollback();
         throw error;
       }
 
-    } catch (error) {
+    } catch (error: any) {
       return res.status(500).json({ error: error.message });
     }
   };

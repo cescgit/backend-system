@@ -12,7 +12,7 @@ export class PreInvoicingControllers {
                 "select BIN_TO_UUID(p.id) as id, LPAD(p.numero_prefacturacion, 10, '0') AS numero_prefacturacion, p.termino, p.observaciones, p.subtotal, p.total, p.estado, p.impuesto_manual, p.fecha_creacion, p.cuenta_por_cobrar, p.cliente_existente, p.cliente_manual, BIN_TO_UUID(p.id_cliente) as id_cliente, c.nombre_cliente as cliente, coalesce(uc.nombre_usuario, '') as nombre_usuario_creador from prefacturacion p left join cliente c on c.id=p.id_cliente left join usuario uc on uc.id=p.usuario_creador order by p.numero_prefacturacion desc;"
             );
             res.json(result[0]);
-        } catch (error) {
+        } catch (error: any) {
             res.status(500).json({ error: error.message });
         }
     };
@@ -27,7 +27,7 @@ export class PreInvoicingControllers {
             );
 
             res.json(result[0]);
-        } catch (error) {
+        } catch (error: any) {
             res.status(500).json({ error: error.message });
         }
     };
@@ -58,14 +58,14 @@ export class PreInvoicingControllers {
                 "select count(BIN_TO_UUID(id)) as idUser from usuario where BIN_TO_UUID(id) = ?;",
                 [usuario_creador]
             );
-            const [{ idUser }] = userExists[0];
+            const [{ idUser }] = (userExists as any)[0];
             if (idUser === 0) {
                 const error = new Error("El usuario que esta intentando crear esta prefacturación no existe en la base de datos...");
                 return res.status(409).json({ error: error.message });
             }
 
             const uuId = await connection.query("select UUID() as getIdPreInvoicing;")
-            const [{ getIdPreInvoicing }] = uuId[0];            
+            const [{ getIdPreInvoicing }] = (uuId as any)[0];            
 
             if (cliente_existente == 1) {
                 // * query to check if the customer exists in the database
@@ -73,7 +73,7 @@ export class PreInvoicingControllers {
                     "select count(BIN_TO_UUID(id)) as idCustomer from cliente where BIN_TO_UUID(id) = ?;",
                     [id_cliente]
                 );
-                const [{ idCustomer }] = customerExists[0];
+                const [{ idCustomer }] = (customerExists as any)[0];
                 if (idCustomer === 0) {
                     const error = new Error("El cliente que esta buscando no existe en la base de datos...");
                     return res.status(409).json({ error: error.message });
@@ -120,7 +120,7 @@ export class PreInvoicingControllers {
                     "select count(BIN_TO_UUID(id)) as idProduct from producto where BIN_TO_UUID(id) = ?;",
                     [detallesPrefacturacion.id_producto]
                 );
-                const [{ idProduct }] = productExists[0];
+                const [{ idProduct }] = (productExists as any)[0];
                 if (idProduct === 0) {
                     const error = new Error("El producto que esta buscando no existe en la base de datos...");
                     return res.status(409).json({ error: error.message });
@@ -142,7 +142,7 @@ export class PreInvoicingControllers {
                     "select k.fecha_creacion, k.precio_disponible, k.cantidad_disponible, k.total_disponible from kardex k inner join  producto p on p.id=k.id_producto where BIN_TO_UUID(k.id_producto) = ? order by k.fecha_creacion desc;",
                     [detallesPrefacturacion.id_producto]
                 )
-                const [{ precio_disponible, cantidad_disponible, total_disponible }] = getStockbyKardex[0];
+                const [{ precio_disponible, cantidad_disponible, total_disponible }] = (getStockbyKardex as any)[0];
 
                 const resultCantidadNew = cantidad_disponible - detallesPrefacturacion.cantidad;                
                 const resultTotal = parseInt(total_disponible) - parseInt(detallesPrefacturacion.subtotal.toString());
@@ -152,7 +152,7 @@ export class PreInvoicingControllers {
                     "select utilidad1, utilidad2, utilidad3, utilidad4 from producto where BIN_TO_UUID(id) = ?;",
                     [detallesPrefacturacion.id_producto]
                 )
-                const [{ utilidad1, utilidad2, utilidad3, utilidad4 }] = getEarningProductById[0];
+                const [{ utilidad1, utilidad2, utilidad3, utilidad4 }] = (getEarningProductById as any)[0];
 
                 const earningNew1 = 100 - utilidad1;
                 const result1 = earningNew1 / 100;
@@ -219,7 +219,7 @@ export class PreInvoicingControllers {
                     "select count(BIN_TO_UUID(id_cliente)) as customerExistsBalance from balance_cliente where BIN_TO_UUID(id_cliente) = ?;",
                     [id_cliente]
                 );
-                const [{ customerExistsBalance }] = customerExistsInBalance[0];
+                const [{ customerExistsBalance }] = (customerExistsInBalance as any)[0];
 
                 if (customerExistsBalance >= 1) {
                     // * get the debit, credit and balance of the customer
@@ -232,21 +232,21 @@ export class PreInvoicingControllers {
                         totalDebito,
                         totalcredito,
                         totalBalance
-                    }] = resultDataBalanceCustomer[0];
+                    }] = (resultDataBalanceCustomer[0] as any[]);
 
                     // * get number of sales
                     const resultNumberPreInvoincing = await connection.query(
                         "select LPAD(numero_prefacturacion, 10, '0') AS numberPreInvoincing from venta order by numero_venta desc limit 1;"
                     );
 
-                    const [{ numberPreInvoincing }] = resultNumberPreInvoincing[0];
+                    const [{ numberPreInvoincing }] = (resultNumberPreInvoincing[0] as any[]);
                     const descriptionBalanceCustomer = `Prefacturación N° ${numberPreInvoincing}`;
 
                     // * create operation balance customer
                     const totalBalanceCustomer = totalBalance - parseInt(total.toString());
 
                     const uuIdBalanceCustomer = await connection.query("select UUID() as getIdBalanceCustomer;")
-                    const [{ getIdBalanceCustomer }] = uuIdBalanceCustomer[0];
+                    const [{ getIdBalanceCustomer }] = (uuIdBalanceCustomer[0] as any[]);
 
                     await connection.query(
                         "insert into balance_cliente(id, descripcion, fecha_emision, fecha_vencimiento, debito, credito, balance, estado, estado_credito, id_venta, usuario_creador, id_cliente) values (UUID_TO_BIN(?), ?, now(), ?, ?, ?, ?, ?, ?, UUID_TO_BIN(?), UUID_TO_BIN(?), UUID_TO_BIN(?));",
@@ -287,11 +287,11 @@ export class PreInvoicingControllers {
                     );
 
                     // * get number of pre-invoicing
-                    const [{ numberPreInvoicing }] = resultNumberPreInvoicing[0];
+                    const [{ numberPreInvoicing }] = (resultNumberPreInvoicing as any)[0];
                     const descriptionBalanceCustomers = `Prefactura N° ${numberPreInvoicing}`;
 
                     const uuIdBalanceCustomer = await connection.query("select UUID() as getIdBalanceSupplier;")
-                    const [{ getIdBalanceSupplier }] = uuIdBalanceCustomer[0];
+                    const [{ getIdBalanceSupplier }] = (uuIdBalanceCustomer[0] as any[]);
 
                     // * insert data in the first register of balance customer
                     await connection.query(
@@ -328,7 +328,7 @@ export class PreInvoicingControllers {
                 }
             }
             res.send("La prefacturación se creo correctamente...");
-        } catch (error) {            
+        } catch (error: any) {            
             res.status(500).json({ error: error.message });
         }
     };
@@ -360,7 +360,7 @@ export class PreInvoicingControllers {
                 "select count(BIN_TO_UUID(id)) as idUser from usuario where BIN_TO_UUID(id) = ?;",
                 [usuario_creador]
             );
-            const [{ idUser }] = userExists[0];
+            const [{ idUser }] = (userExists as any)[0];
             if (idUser === 0) {
                 const error = new Error("El usuario que esta intentando crear esta prefacturación no existe en la base de datos...");
                 return res.status(409).json({ error: error.message });
@@ -370,14 +370,14 @@ export class PreInvoicingControllers {
                 "select count(BIN_TO_UUID(id)) as idSalesQuoteExists from cotizacion_venta where BIN_TO_UUID(id) = ?;",
                 [idSalesQuote]
             );
-            const [{ idSalesQuoteExists }] = salesQuoteExists[0];
+            const [{ idSalesQuoteExists }] = (salesQuoteExists as any)[0];
             if (idSalesQuoteExists === 0) {
                 const error = new Error("Esta proforma que esta buscando no existe en la base de datos...");
                 return res.status(409).json({ error: error.message });
             }
 
             const uuId = await connection.query("select UUID() as getIdPreInvoicing;")
-            const [{ getIdPreInvoicing }] = uuId[0];
+            const [{ getIdPreInvoicing }] = (uuId as any)[0];
 
             if (cliente_existente == 1) {
                 // * query to check if the customer exists in the database
@@ -385,7 +385,7 @@ export class PreInvoicingControllers {
                     "select count(BIN_TO_UUID(id)) as idCustomer from cliente where BIN_TO_UUID(id) = ?;",
                     [id_cliente]
                 );
-                const [{ idCustomer }] = customerExists[0];
+                const [{ idCustomer }] = (customerExists as any)[0];
                 if (idCustomer === 0) {
                     const error = new Error("El cliente que esta buscando no existe en la base de datos...");
                     return res.status(409).json({ error: error.message });
@@ -437,7 +437,7 @@ export class PreInvoicingControllers {
                     "select count(BIN_TO_UUID(id)) as idProduct from producto where BIN_TO_UUID(id) = ?;",
                     [detallesPreFacturacion.id_producto]
                 );
-                const [{ idProduct }] = productExists[0];
+                const [{ idProduct }] = (productExists as any)[0];
                 if (idProduct === 0) {
                     const error = new Error("El producto que esta buscando no existe en la base de datos...");
                     return res.status(409).json({ error: error.message });
@@ -458,7 +458,7 @@ export class PreInvoicingControllers {
                     "select k.fecha_creacion, k.precio_disponible, k.cantidad_disponible, k.total_disponible from kardex k inner join  producto p on p.id=k.id_producto where BIN_TO_UUID(k.id_producto) = ? order by k.fecha_creacion desc;",
                     [detallesPreFacturacion.id_producto]
                 )
-                const [{ precio_disponible, cantidad_disponible, total_disponible }] = getStockbyKardex[0];
+                const [{ precio_disponible, cantidad_disponible, total_disponible }] = (getStockbyKardex as any)[0];
 
                 const resultCantidadNew = cantidad_disponible - detallesPreFacturacion.cantidad;                
                 const resultTotal = parseInt(total_disponible) - parseInt(detallesPreFacturacion.subtotal.toString());
@@ -468,7 +468,7 @@ export class PreInvoicingControllers {
                     "select utilidad1, utilidad2, utilidad3, utilidad4 from producto where BIN_TO_UUID(id) = ?;",
                     [detallesPreFacturacion.id_producto]
                 )
-                const [{ utilidad1, utilidad2, utilidad3, utilidad4 }] = getEarningProductById[0];
+                const [{ utilidad1, utilidad2, utilidad3, utilidad4 }] = (getEarningProductById as any)[0];
 
                 const earningNew1 = 100 - utilidad1;
                 const result1 = earningNew1 / 100;
@@ -535,7 +535,7 @@ export class PreInvoicingControllers {
                     "select count(BIN_TO_UUID(id_cliente)) as customerExistsBalance from balance_cliente where BIN_TO_UUID(id_cliente) = ?;",
                     [id_cliente]
                 );
-                const [{ customerExistsBalance }] = customerExistsInBalance[0];
+                const [{ customerExistsBalance }] = (customerExistsInBalance as any)[0];
 
                 if (customerExistsBalance >= 1) {
                     // * get the debit, credit and balance of the customer
@@ -548,21 +548,21 @@ export class PreInvoicingControllers {
                         totalDebito,
                         totalcredito,
                         totalBalance
-                    }] = resultDataBalanceCustomer[0];
+                    }] = (resultDataBalanceCustomer[0] as any[]);
 
                     // * get number of sales
                     const resultNumberPreInvoicing = await connection.query(
                         "select LPAD(numero_prefacturacion, 10, '0') AS numberPreInvoicing from prefacturacion order by numero_prefacturacion desc limit 1;"
                     );
 
-                    const [{ numberPreInvoicing }] = resultNumberPreInvoicing[0];
+                    const [{ numberPreInvoicing }] = (resultNumberPreInvoicing[0] as any[]);
                     const descriptionBalanceCustomer = `Prefacturación N° ${numberPreInvoicing}`;
 
                     // * create operation balance customer
                     const totalBalanceCustomer = totalBalance - parseInt(total.toString());
 
                     const uuIdBalanceCustomer = await connection.query("select UUID() as getIdBalanceCustomer;")
-                    const [{ getIdBalanceCustomer }] = uuIdBalanceCustomer[0];
+                    const [{ getIdBalanceCustomer }] = (uuIdBalanceCustomer[0] as any[]);
 
                     await connection.query(
                         "insert into balance_cliente(id, descripcion, fecha_emision, fecha_vencimiento, debito, credito, balance, estado, estado_credito, id_prefacturacion, usuario_creador, id_cliente) values (UUID_TO_BIN(?), ?, now(), ?, ?, ?, ?, ?, ?, UUID_TO_BIN(?), UUID_TO_BIN(?), UUID_TO_BIN(?));",
@@ -603,11 +603,11 @@ export class PreInvoicingControllers {
                     );
 
                     // * get number of pre-invoicing
-                    const [{ numberPreInvoicing }] = resultNumberPreInvoicing[0];
+                    const [{ numberPreInvoicing }] = (resultNumberPreInvoicing[0] as any[]);
                     const descriptionBalanceCustomers = `Prefactura N° ${numberPreInvoicing}`;
 
                     const uuIdBalanceCustomer = await connection.query("select UUID() as getIdBalanceCustomer;")
-                    const [{ getIdBalanceCustomer }] = uuIdBalanceCustomer[0];
+                    const [{ getIdBalanceCustomer }] = (uuIdBalanceCustomer[0] as any[]);
 
                     // * insert data in the first register of balance customer
                     await connection.query(
@@ -645,7 +645,7 @@ export class PreInvoicingControllers {
             }
 
             res.send("La prefacturación se creo correctamente...");
-        } catch (error) {            
+        } catch (error: any) {            
             res.status(500).json({ error: error.message });
         }
     };
@@ -677,7 +677,7 @@ export class PreInvoicingControllers {
                 "select count(BIN_TO_UUID(id)) as idUser from usuario where BIN_TO_UUID(id) = ?;",
                 [usuario_creador]
             );
-            const [{ idUser }] = userExists[0];
+            const [{ idUser }] = (userExists as any)[0];
             if (idUser === 0) {
                 const error = new Error("El usuario que esta intentando crear esta prefacturación no existe en la base de datos...");
                 return res.status(409).json({ error: error.message });
@@ -687,14 +687,14 @@ export class PreInvoicingControllers {
                 "select count(BIN_TO_UUID(id)) as idSeparatedProducttExists from producto_apartado where id = UUID_TO_BIN(?);",
                 [idSeparatedProduct]
             );
-            const [{ idSeparatedProducttExists }] = separatedProductteExists[0];
+            const [{ idSeparatedProducttExists }] = (separatedProductteExists as any)[0];
             if (idSeparatedProducttExists === 0) {
                 const error = new Error("Este apartado de producto que estas buscando no existe en la base de datos...");
                 return res.status(409).json({ error: error.message });
             }
 
             const uuId = await connection.query("select UUID() as getIdPreInvoicing;")
-            const [{ getIdPreInvoicing }] = uuId[0];
+            const [{ getIdPreInvoicing }] = (uuId as any)[0];
 
             if (cliente_existente == 1) {
                 // * query to check if the customer exists in the database
@@ -702,7 +702,7 @@ export class PreInvoicingControllers {
                     "select count(BIN_TO_UUID(id)) as idCustomer from cliente where BIN_TO_UUID(id) = ?;",
                     [id_cliente]
                 );
-                const [{ idCustomer }] = customerExists[0];
+                const [{ idCustomer }] = (customerExists as any)[0];
                 if (idCustomer === 0) {
                     const error = new Error("El cliente que esta buscando no existe en la base de datos...");
                     return res.status(409).json({ error: error.message });
@@ -754,7 +754,7 @@ export class PreInvoicingControllers {
                     "select count(BIN_TO_UUID(id)) as idProduct from producto where BIN_TO_UUID(id) = ?;",
                     [detallesPrefacturacion.id_producto]
                 );
-                const [{ idProduct }] = productExists[0];
+                const [{ idProduct }] = (productExists as any)[0];
                 if (idProduct === 0) {
                     const error = new Error("El producto que esta buscando no existe en la base de datos...");
                     return res.status(409).json({ error: error.message });
@@ -776,7 +776,7 @@ export class PreInvoicingControllers {
                     "select k.fecha_creacion, k.cantidad_disponible, k.total_disponible from kardex k inner join  producto p on p.id=k.id_producto where BIN_TO_UUID(k.id_producto) = ? order by k.fecha_creacion desc;",
                     [detallesPrefacturacion.id_producto]
                 )
-                const [{ cantidad_disponible, total_disponible }] = getStockbyKardex[0];
+                const [{ cantidad_disponible, total_disponible }] = (getStockbyKardex as any)[0];
 
                 const resultCantidadNew = cantidad_disponible - detallesPrefacturacion.cantidad;
                 const resultTotal = parseInt(total_disponible) - parseInt(detallesPrefacturacion.subtotal.toString());
@@ -817,7 +817,7 @@ export class PreInvoicingControllers {
                     "select count(BIN_TO_UUID(id_cliente)) as customerExistsBalance from balance_cliente where BIN_TO_UUID(id_cliente) = ?;",
                     [id_cliente]
                 );
-                const [{ customerExistsBalance }] = customerExistsInBalance[0];
+                const [{ customerExistsBalance }] = (customerExistsInBalance as any)[0];
 
                 if (customerExistsBalance >= 1) {
                     // * get the debit, credit and balance of the customer
@@ -830,21 +830,21 @@ export class PreInvoicingControllers {
                         totalDebito,
                         totalcredito,
                         totalBalance
-                    }] = resultDataBalanceCustomer[0];
+                    }] = (resultDataBalanceCustomer[0] as any[]);
 
                     // * get number of sales
                     const resultNumberPreInvoicing = await connection.query(
                         "select LPAD(numero_prefacturacion, 10, '0') AS numberPreInvoicing from prefacturacion order by numero_prefacturacion desc limit 1;"
                     );
 
-                    const [{ numberPreInvoicing }] = resultNumberPreInvoicing[0];
+                    const [{ numberPreInvoicing }] = (resultNumberPreInvoicing[0] as any[]);
                     const descriptionBalanceCustomer = `Prefacturación N° ${numberPreInvoicing}`;
 
                     // * create operation balance customer
                     const totalBalanceCustomer = totalBalance - parseInt(total.toString());
 
                     const uuIdBalanceCustomer = await connection.query("select UUID() as getIdBalanceCustomer;")
-                    const [{ getIdBalanceCustomer }] = uuIdBalanceCustomer[0];
+                    const [{ getIdBalanceCustomer }] = (uuIdBalanceCustomer[0] as any[]);
 
                     await connection.query(
                         "insert into balance_cliente(id, descripcion, fecha_emision, fecha_vencimiento, debito, credito, balance, estado, estado_credito, id_prefacturacion, usuario_creador, id_cliente) values (UUID_TO_BIN(?), ?, now(), ?, ?, ?, ?, ?, ?, UUID_TO_BIN(?), UUID_TO_BIN(?), UUID_TO_BIN(?));",
@@ -885,11 +885,11 @@ export class PreInvoicingControllers {
                     );
 
                     // * get number of pre-invoicing
-                    const [{ numberPreInvoicing }] = resultNumberPreInvoicing[0];
+                    const [{ numberPreInvoicing }] = (resultNumberPreInvoicing[0] as any[]);
                     const descriptionBalanceCustomers = `Prefacturación N° ${numberPreInvoicing}`;
 
                     const uuIdBalanceCustomer = await connection.query("select UUID() as getIdBalanceSupplier;")
-                    const [{ getIdBalanceSupplier }] = uuIdBalanceCustomer[0];
+                    const [{ getIdBalanceSupplier }] = (uuIdBalanceCustomer[0] as any[]);
 
                     // * insert data in the first register of balance customer
                     await connection.query(
@@ -927,7 +927,7 @@ export class PreInvoicingControllers {
             }
 
             res.send("La prefacturación se creo correctamente...");
-        } catch (error) {            
+        } catch (error: any) {            
             res.status(500).json({ error: error.message });
         }
     };

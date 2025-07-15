@@ -13,7 +13,7 @@ export class RemissionController {
                 "select BIN_TO_UUID(r.id) as id, LPAD(r.codigo, 10, '0') as codigo, BIN_TO_UUID(c.id) as id_cliente, c.nombre_cliente, r.fecha_creacion, coalesce(uc.nombre_usuario, '') as nombre_usuario_creador, coalesce(um.nombre_usuario, '') as nombre_usuario_modificador from remisiones r inner join cliente c on c.id=r.id_cliente left join usuario uc on uc.id=r.usuario_creador left join usuario um on um.id=r.usuario_modificador;"
             );
             res.json(result[0]);
-        } catch (error) {
+        } catch (error: any) {
             res.status(500).json({ error: error.message });
         }
     };
@@ -28,7 +28,7 @@ export class RemissionController {
             );
 
             res.json(result[0]);
-        } catch (error) {
+        } catch (error: any) {
             res.status(500).json({ error: error.message });
         }
     };
@@ -48,14 +48,14 @@ export class RemissionController {
                 "select count(BIN_TO_UUID(id)) as idUser from usuario where BIN_TO_UUID(id) = ?;",
                 [usuario_creador]
             );
-            const [{ idUser }] = userExists[0];
+            const [{ idUser }] = (userExists as any)[0];
             if (idUser === 0) {
                 const error = new Error("El usuario que esta creando esta remisión, no existe...");
                 return res.status(409).json({ error: error.message });
             }
 
             const uuId = await connection.query("select UUID() as getIdRemission;")
-            const [{ getIdRemission }] = uuId[0];
+            const [{ getIdRemission }] = (uuId as any)[0];
 
             await connection.query(
                 "insert into remisiones (id, fecha_creacion, id_cliente, usuario_creador) values (UUID_TO_BIN(?), now(), UUID_TO_BIN(?), UUID_TO_BIN(?));",
@@ -67,7 +67,7 @@ export class RemissionController {
                     "select stock, coalesce(cantidad_remision, '0') as cantidad_remision from inventario where id_producto = UUID_TO_BIN(?);",
                     [detallesRemissions.id_producto]
                 )
-                const [{ stock, cantidad_remision }] = getDataProducts[0];
+                const [{ stock, cantidad_remision }] = (getDataProducts as any)[0];
                 const newStockInvetory = stock - detallesRemissions.cantidad;
 
                 if (newStockInvetory < 0) {
@@ -102,7 +102,7 @@ export class RemissionController {
                 }
             }
             res.send("Remisión creada correctamente...");
-        } catch (error) {
+        } catch (error: any) {
             res.status(500).json({ error: error.message });
         }
     };
@@ -123,7 +123,7 @@ export class RemissionController {
                 "select count(BIN_TO_UUID(id)) as idUser from usuario where BIN_TO_UUID(id) = ?;",
                 [usuario_modificador]
             );
-            const [{ idUser }] = userExists[0];
+            const [{ idUser }] = (userExists as any)[0];
             if (idUser === 0) {
                 const error = new Error("El usuario que esta editando esta remisión no existe...");
                 return res.status(409).json({ error: error.message });
@@ -134,7 +134,9 @@ export class RemissionController {
                 [id]
             )
 
-            if (existsRemisssion[0][0].countRemission === 0) {
+            const [{ countRemission }] = (existsRemisssion as any) [0];
+
+            if (countRemission === 0) {
                 return res.status(404).json({ error: "La remisión que estas buscando no existe..." });
             }
 
@@ -145,7 +147,7 @@ export class RemissionController {
                     "select count(cantidad) as existsRemissions from detalle_remisiones where id_producto = UUID_TO_BIN(?);",
                     [detallesRemissions.id_producto]
                 );
-                const [{ existsRemissions }] = existsProductInventory[0];                
+                const [{ existsRemissions }] = (existsProductInventory as any)[0];                
 
                 if (existsRemissions > 0) {
 
@@ -153,13 +155,13 @@ export class RemissionController {
                         "select stock as stockInventory from inventario where id_producto = UUID_TO_BIN(?);",
                         [detallesRemissions.id_producto]
                     )
-                    const [{ stockInventory }] = getDataStockProduct[0];
+                    const [{ stockInventory }] = (getDataStockProduct as any)[0];
 
                     const getAmmount = await connection.query(
                         "select cantidad as Ammount from detalle_remisiones where id_producto = UUID_TO_BIN(?);",
                         [detallesRemissions.id_producto]
                     )
-                    const [{ Ammount }] = getAmmount[0];                    
+                    const [{ Ammount }] = (getAmmount as any)[0];                    
 
                     const sumStockInventory = stockInventory + Ammount;
 
@@ -172,7 +174,7 @@ export class RemissionController {
                         "select stock from inventario where id_producto = UUID_TO_BIN(?);",
                         [detallesRemissions.id_producto]
                     )
-                    const [{ stock }] = getDataProducts[0];
+                    const [{ stock }] = (getDataProducts as any)[0];
 
                     const newStockInvetory = stock - detallesRemissions.cantidad;
                     if (newStockInvetory <= 0) {
@@ -191,7 +193,7 @@ export class RemissionController {
                         "select stock from inventario where id_producto = UUID_TO_BIN(?);",
                         [detallesRemissions.id_producto]
                     )
-                    const [{ stock }] = getDataProducts[0];
+                    const [{ stock }] = (getDataProducts as any)[0];
 
                     const newStockInvetory = stock - detallesRemissions.cantidad;
 
@@ -223,7 +225,7 @@ export class RemissionController {
             }
 
             res.send("La remisión se modifico correctamente...");
-        } catch (error) {            
+        } catch (error: any) {            
             res.status(500).json({ error: error.message });
         }
     };
@@ -239,7 +241,7 @@ export class RemissionController {
                 "select count(BIN_TO_UUID(dr.id_producto)) as existsProductInventory from detalle_remisiones dr inner join inventario i on i.id=dr.id_inventario where dr.id_producto = UUID_TO_BIN(?) and dr.id_inventario = UUID_TO_BIN(?) and dr.id_remisiones = UUID_TO_BIN(?);",
                 [id_producto, id_inventario, id]
             );
-            const [{ existsProductInventory }] = productExistsInInventory[0];
+            const [{ existsProductInventory }] = (productExistsInInventory as any)[0];
 
             if (existsProductInventory > 0) {
 
@@ -247,7 +249,7 @@ export class RemissionController {
                     "select count(BIN_TO_UUID(id_producto)) as productExists from detalle_remisiones where id_producto = UUID_TO_BIN(?) and id_remisiones = UUID_TO_BIN(?);",
                     [id_producto, id]
                 );
-                const [{ productExists }] = existsProductInRemission[0];
+                const [{ productExists }] = (existsProductInRemission as any)[0];
                 if (productExists === 0) {
                     const error = new Error("El producto que estas buscando no existe en la remisión...");
                     return res.status(404).json({ error: error.message });
@@ -257,13 +259,13 @@ export class RemissionController {
                     "select stock, cantidad_remision from inventario where id_producto = UUID_TO_BIN(?);",
                     [id_producto]
                 );
-                const [{ stock, cantidad_remision }] = getStockInventory[0];
+                const [{ stock, cantidad_remision }] = (getStockInventory as any)[0];
 
                 const getAmmountDetailsRemission = await connection.query(
                     "select cantidad as ammmountRemission from detalle_remisiones where id_producto = UUID_TO_BIN(?);",
                     [id_producto]
                 );
-                const [{ ammmountRemission }] = getAmmountDetailsRemission[0];
+                const [{ ammmountRemission }] = (getAmmountDetailsRemission as any)[0];
 
                 const resultNewStock = stock + ammmountRemission;
 
@@ -289,7 +291,7 @@ export class RemissionController {
 
                 res.send("Producto eliminado correctamente...");
             }
-        } catch (error) {
+        } catch (error: any) {
             res.status(500).json({ error: error.message });
         }
     }

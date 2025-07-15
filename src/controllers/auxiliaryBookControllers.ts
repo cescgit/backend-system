@@ -12,7 +12,7 @@ export class AuxiliaryBookController {
                 "select BIN_TO_UUID(id) as id, codigo, descripcion, fecha_creacion from libro_auxiliar order by codigo;"
             );
             res.json(result[0]);
-        } catch (error) {
+        } catch (error: any) {
             res.status(500).json({ error: error.message });
         }
     };
@@ -27,7 +27,7 @@ export class AuxiliaryBookController {
             );
 
             res.json(result[0]);
-        } catch (error) {
+        } catch (error: any) {
             res.status(500).json({ error: error.message });
         }
     };
@@ -44,22 +44,22 @@ export class AuxiliaryBookController {
             auxiliaryBook;
 
         try {
-            const userExists = await connection.query(
-                "select count(BIN_TO_UUID(id)) as idUser from usuario where BIN_TO_UUID(id) = ?;",
-                [usuario_creador]
+            const [userExists]: any = await connection.query(
+                "SELECT COUNT(*) as idUser FROM usuario WHERE BIN_TO_UUID(id) = ?;",
+                [req.body.usuario_creador]
             );
-            const [{ idUser }] = userExists[0];
+            const [{ idUser }] = userExists;
             if (idUser === 0) {
                 const error = new Error("El usuario que esta creando este libro auxiliar, no existe...");
                 return res.status(409).json({ error: error.message });
             }
 
-            const auxiliaryBookExists = await connection.query(
-                "select count(codigo) as valueNumberAccount from libro_auxiliar where codigo = ?;",
-                [codigo]
+            const [auxiliaryBookExists]: any = await connection.query(
+                "SELECT COUNT(*) as valueName FROM libro_auxiliar WHERE nombre_libro = ?;",
+                [req.body.nombre_libro]
             );
-            const [{ valueNumberAccount }] = auxiliaryBookExists[0];
-            if (valueNumberAccount === 1) {
+            const [{ valueName }] = auxiliaryBookExists;
+            if (valueName === 1) {
                 const error = new Error("Este libro auxiliar ya existen en la base de datos...");
                 return res.status(409).json({ error: error.message });
             }
@@ -70,7 +70,7 @@ export class AuxiliaryBookController {
             );
 
             res.send("El libro auxiliar fue creado correctamente...");
-        } catch (error) {
+        } catch (error: any) {
             res.status(500).json({ error: error.message });
         }
     };
@@ -87,33 +87,33 @@ export class AuxiliaryBookController {
         } = auxiliaryBook;
 
         try {
-            const userExists = await connection.query(
-                "select count(BIN_TO_UUID(id)) as idUser from usuario where BIN_TO_UUID(id) = ?;",
-                [usuario_modificador]
+            const [userExists2]: any = await connection.query(
+                "SELECT COUNT(*) as idUser FROM usuario WHERE BIN_TO_UUID(id) = ?;",
+                [req.body.usuario_modificador]
             );
-            const [{ idUser }] = userExists[0];
-            if (idUser === 0) {
+            const [{ idUser: idUser2 }] = userExists2;
+            if (idUser2 === 0) {
                 const error = new Error("El usuario que esta editando esta cuenta contable no existe...");
                 return res.status(409).json({ error: error.message });
             }
 
-            const auxiliaryBookExists = await connection.query(
-                "select count(BIN_TO_UUID(id)) as idAuxiliaryBook from libro_auxiliar where BIN_TO_UUID(id) = ?;",
-                [id]
+            const [auxiliaryBookExists2]: any = await connection.query(
+                "SELECT COUNT(*) as valueName FROM libro_auxiliar WHERE nombre_libro = ?;",
+                [req.body.nombre_libro]
             );
-            const [{ idAuxiliaryBook }] = auxiliaryBookExists[0];
-            if (idAuxiliaryBook === 0) {
+            const [{ valueName: valueName2 }] = auxiliaryBookExists2;
+            if (valueName2 === 0) {
                 const error = new Error(
                     "El libro auxiliar que estas buscando, no se encontro..."
                 );
                 return res.status(404).json({ error: error.message });
             }
 
-            const codeAuxiliaryBookExists = await connection.query(
-                "select count(codigo) as valueNumberAccount from libro_auxiliar where codigo = ? and BIN_TO_UUID(id) = ?;",
+            const [codeAuxiliaryBookExists]: any = await connection.query(
+                "SELECT COUNT(*) as valueNumberAccount FROM libro_auxiliar WHERE codigo = ? and BIN_TO_UUID(id) = ?;",
                 [codigo, id]
             );
-            const [{ valueNumberAccount }] = codeAuxiliaryBookExists[0];
+            const [{ valueNumberAccount }] = codeAuxiliaryBookExists;
             if (valueNumberAccount === 1) {
                 const error = new Error("Este libro auxiliar ya existe en la base de datos...");
                 return res.status(409).json({ error: error.message });
@@ -125,7 +125,7 @@ export class AuxiliaryBookController {
             );
 
             res.send("El libro auxiliar se modifico correctamente...");
-        } catch (error) {
+        } catch (error: any) {
             res.status(500).json({ error: error.message });
         }
     };

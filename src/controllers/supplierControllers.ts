@@ -10,7 +10,7 @@ export class SupplierController {
         "select BIN_TO_UUID(p.id) as id, LPAD(p.codigo_proveedor, 10, '0') as codigo_proveedor, p.nombre_proveedor, p.direccion_proveedor, p.correo_proveedor, p.telefono_proveedor, p.celular_proveedor, p.ruc, p.contacto, p.estado, p.termino_compra, p.fecha_creacion, coalesce(uc.nombre_usuario, '') as nombre_usuario_creador, coalesce(um.nombre_usuario, '') as nombre_usuario_modificador from proveedor p left join usuario uc on uc.id=p.usuario_creador left join usuario um on um.id=p.usuario_modificador order by p.codigo_proveedor desc;"
       );
       res.json(result[0]);
-    } catch (error) {
+    } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
   };
@@ -25,7 +25,7 @@ export class SupplierController {
       );
 
       res.json(result[0]);
-    } catch (error) {
+    } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
   };
@@ -52,7 +52,7 @@ export class SupplierController {
         "select count(BIN_TO_UUID(id)) as idUser from usuario where BIN_TO_UUID(id) = ?;",
         [usuario_creador]
       );
-      const [{ idUser }] = userExists[0];
+      const [{ idUser }] = (userExists as any)[0];
       if (idUser === 0) {
         const error = new Error("El usuario que esta intentando guardar este registro no existe en la base de datos");
         return res.status(409).json({ error: error.message });
@@ -62,7 +62,7 @@ export class SupplierController {
         "select count(nombre_proveedor) as valueSupplier from proveedor where nombre_proveedor = ?;",
         [nombre_proveedor]
       );
-      const [{ valueSupplier }] = supplierExists[0];
+      const [{ valueSupplier }] = (supplierExists as any)[0];
       if (valueSupplier === 1) {
         const error = new Error(
           "Este proveedor ya existen en la base de datos..."
@@ -87,7 +87,7 @@ export class SupplierController {
       );
 
       res.send("El proveedor se creo correctamente...");
-    } catch (error) {
+    } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
   };
@@ -115,7 +115,7 @@ export class SupplierController {
         "select count(BIN_TO_UUID(id)) as idUser from usuario where BIN_TO_UUID(id) = ?;",
         [usuario_modificador]
       );
-      const [{ idUser }] = userExists[0];
+      const [{ idUser }] = (userExists as any)[0];
       if (idUser === 0) {
         const error = new Error("El usuario que esta intentando modificar este registro no existe en la base de datos");
         return res.status(409).json({ error: error.message });
@@ -125,7 +125,7 @@ export class SupplierController {
         "select count(BIN_TO_UUID(id)) as idSupplier from proveedor where BIN_TO_UUID(id) = ?;",
         [id]
       );
-      const [{ idSupplier }] = supplierTypeValueExists[0];
+      const [{ idSupplier }] = (supplierTypeValueExists as any)[0];
       if (idSupplier === 0) {
         const error = new Error(
           "El proveedor que estas buscando, no se encontro..."
@@ -137,7 +137,7 @@ export class SupplierController {
         "select count(nombre_proveedor) as valueNombreProveedor from proveedor where nombre_proveedor = ? and BIN_TO_UUID(id) != ?;",
         [nombre_proveedor, id]
       );
-      const [{ valueNombreProveedor }] = supplierExists[0];
+      const [{ valueNombreProveedor }] = (supplierExists as any)[0];
       if (valueNombreProveedor === 1) {
         const error = new Error(
           "El proveedor se encuentra registrado en la base de datos..."
@@ -163,7 +163,7 @@ export class SupplierController {
       );
 
       res.send("El proveedor se modifico correctamente...");
-    } catch (error) {
+    } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
   };
@@ -176,7 +176,7 @@ export class SupplierController {
         "select count(BIN_TO_UUID(id)) as id from proveedor where BIN_TO_UUID(id) = ?;",
         [idSupplier]
       );
-      const [{ id }] = existsSupplier[0];
+      const [{ id }] = (existsSupplier as any)[0];
 
       if (id === 0) {
         const error = new Error(
@@ -191,7 +191,7 @@ export class SupplierController {
       );
 
       res.send("El proveedor se elimino correctamente...");
-    } catch (error) {
+    } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
   };

@@ -10,7 +10,7 @@ export class weightControllers {
         "select BIN_TO_UUID(p.id) as id, p.peso, p.abreviatura, p.fecha_creacion, coalesce(uc.nombre_usuario, '') as nombre_usuario_creador, coalesce(um.nombre_usuario, '') as nombre_usuario_modificador from peso p left join usuario uc on uc.id=p.usuario_creador left join usuario um on um.id=p.usuario_modificador;"
       );
       res.json(result[0]);
-    } catch (error) {
+    } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
   };
@@ -25,7 +25,7 @@ export class weightControllers {
       );
 
       res.json(result[0]);
-    } catch (error) {
+    } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
   };
@@ -45,7 +45,7 @@ export class weightControllers {
         "select count(BIN_TO_UUID(id)) as idUser from usuario where BIN_TO_UUID(id) = ?;",
         [usuario_creador]
       );
-      const [{ idUser }] = userExists[0];
+      const [{ idUser }] = (userExists as any)[0];
 
       if (idUser === 0) {
         const error = new Error("El usuario que esta intentando crear la unidad de medida, no existe...");
@@ -56,7 +56,7 @@ export class weightControllers {
         "select count(peso) as weightValue from peso where peso = ?;",
         [peso]
       );
-      const [{ weightValue }] = weightData[0];
+      const [{ weightValue }] = (weightData as any)[0];
       if (weightValue === 1) {
         const error = new Error(
           "Este peso ya existen en la base de datos..."
@@ -68,7 +68,7 @@ export class weightControllers {
         "select count(abreviatura) as valueAbreviatura from peso where abreviatura = ?;",
         [abreviatura]
       );
-      const [{ valueAbreviatura }] = weightAbreviatura[0];
+      const [{ valueAbreviatura }] = (weightAbreviatura as any)[0];
       if (valueAbreviatura === 1) {
         const error = new Error(
           "Esta abreviatura ya existen en la base de datos..."
@@ -87,9 +87,9 @@ export class weightControllers {
       );
 
       res.send("El peso se creo correctamente...");
-    } catch (error) {
+    } catch (error: any) {
       res.status(500).json({ error: error.message });
-    }
+    } 
   };
 
   // * Update weight by id
@@ -107,7 +107,7 @@ export class weightControllers {
         "select count(BIN_TO_UUID(id)) as idUser from usuario where BIN_TO_UUID(id) = ?;",
         [usuario_modificador]
       );
-      const [{ idUser }] = userExists[0];
+      const [{ idUser }] = (userExists as any)[0];
       if (idUser === 0) {
         const error = new Error("El usuario que esta intentando modificar el peso no existe en la base de datos...");
         return res.status(409).json({ error: error.message });
@@ -117,7 +117,7 @@ export class weightControllers {
         "select count(BIN_TO_UUID(id)) as idWeight from peso where BIN_TO_UUID(id) = ?;",
         [id]
       );
-      const [{ idWeight }] = weightExists[0];
+      const [{ idWeight }] = (weightExists as any)[0];
       if (idWeight === 0) {
         const error = new Error(
           "El peso que estas buscando, no se encuentra en la base de datos..."
@@ -129,7 +129,7 @@ export class weightControllers {
         "select count(peso) as valueWeight from peso where peso = ? and BIN_TO_UUID(id) != ?;",
         [peso, id]
       );
-      const [{ valueWeight }] = weightData[0];
+      const [{ valueWeight }] = (weightData as any)[0];
       if (valueWeight === 1) {
         const error = new Error(
           "Este peso se encuentra registrado en la base de datos..."
@@ -141,7 +141,7 @@ export class weightControllers {
         "select count(abreviatura) as valueAbreviatura from peso where abreviatura = ?;",
         [abreviatura]
       );
-      const [{ valueAbreviatura }] = weightAbreviatura[0];
+      const [{ valueAbreviatura }] = (weightAbreviatura as any)[0];
       if (valueAbreviatura === 1) {
         const error = new Error(
           "Esta abreviatura ya existen en la base de datos..."
@@ -160,7 +160,7 @@ export class weightControllers {
       );
 
       res.send("El peso se modifico correctamente...");
-    } catch (error) {
+    } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
   };
@@ -173,7 +173,7 @@ export class weightControllers {
         "select count(BIN_TO_UUID(id)) as id from peso where BIN_TO_UUID(id) = ?;",
         [idWeight]
       );
-      const [{ id }] = existsWeight[0];
+      const [{ id }] = (existsWeight as any)[0];
 
       if (id === 0) {
         const error = new Error(
@@ -187,7 +187,7 @@ export class weightControllers {
       ]);
 
       res.send("El peso se ha eliminado correctamente...");
-    } catch (error) {
+    } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
   };

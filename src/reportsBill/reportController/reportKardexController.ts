@@ -36,7 +36,7 @@ export class reportKardexController {
                 peso,
                 marca,
                 categoria
-            } = resultProduct[0][0];
+            } = (resultProduct[0] as any)[0];
 
             const {
                 nombre_empresa,
@@ -47,7 +47,7 @@ export class reportKardexController {
                 celular_empresa,
                 correo_empresa,
                 logotipo
-            } = resultDataCompany[0][0];
+            } = (resultDataCompany[0] as any)[0];
 
             const response = await fetch(logotipo);
             if (!response.ok) {
@@ -85,7 +85,7 @@ export class reportKardexController {
                         },
                     ],
                     margin: [20, 20, 20, 20],
-                    height: 150
+                    //height: 150
                 },
                 footer: function (currentPage: number, pageCount: number) {
                     return {
@@ -153,7 +153,7 @@ export class reportKardexController {
                                     { text: 'Precio avg.', style: "tableRows" },
                                     { text: 'Total', style: "tableRows" },                                
                                 ],
-                                ...resultDetailsKardex[0].map(item => ([
+                                ...(resultDetailsKardex[0] as any).map((item: any) => ([
                                     { text: item.fecha_creacion, style: "tableRows" },
                                     { text: item.tipo, style: "tableRows" },
                                     { text: item.cantidad_entrada || '0', style: "tableRows" },
@@ -237,7 +237,7 @@ export class reportKardexController {
                 res.end(buffer);
             });
 
-        } catch (error) {
+        } catch (error: any) {
             res.status(500).json({ error: error.message });
         }
     }
@@ -265,7 +265,7 @@ export class reportKardexController {
                 celular_empresa,
                 correo_empresa,
                 logotipo
-            } = resultDataCompany[0][0];
+            } = (resultDataCompany[0] as any)[0];
 
             const dateStart = new Date(startDate);
             const dateEnd = new Date(endDate);
@@ -304,7 +304,7 @@ export class reportKardexController {
                         },
                     ],
                     margin: [20, 20, 20, 20],
-                    height: 150
+                    //height: 150
                 },
                 footer: function (currentPage: number, pageCount: number) {
                     return {
@@ -361,7 +361,7 @@ export class reportKardexController {
                                     { text: 'Precio', style: "tableRows" },
                                     { text: 'Total', style: "tableRows" }
                                 ],
-                                ...resultDetailsKardex[0].map(item => ([
+                                ...(resultDetailsKardex[0] as any).map((item: any) => ([
                                     { text: item.fecha_creacion, style: "tableRows" },
                                     { text: item.tipo, style: "tableRows" },
                                     { text: item.cantidad_entrada || '0', style: "tableRows" },
@@ -445,7 +445,7 @@ export class reportKardexController {
                 res.end(buffer);
             });
 
-        } catch (error) {
+        } catch (error: any) {
             res.status(500).json({ error: error.message });
         }
     }

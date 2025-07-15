@@ -12,7 +12,7 @@ export class DollarChangeController {
         "select BIN_TO_UUID(id) as id, compra, venta, fecha_modificacion from cambio_dolar;"
       );
       res.json(result[0]);
-    } catch (error) {
+    } catch (error: any) {
        res.status(500).json({ error: error.message });
     }
   };
@@ -27,7 +27,7 @@ export class DollarChangeController {
       );
 
       res.json(result[0]);
-    } catch (error) {
+    } catch (error: any) {
        res.status(500).json({ error: error.message });
     }
   };
@@ -48,17 +48,17 @@ export class DollarChangeController {
         "select count(BIN_TO_UUID(id)) as idUser from usuario where BIN_TO_UUID(id) = ?;",
         [usuario_creador]
       );
-      const [{ idUser }] = userExists[0];
+      const [{ idUser }] = (userExists as any)[0];
       if (idUser === 0) {
         const error = new Error("El usuario que esta creando este cambio de dolar, no existe...");
         return res.status(409).json({ error: error.message });
       }
 
-      const marcaExists = await connection.query(
+      const dollarExists = await connection.query(
         "select count(compra and venta) as countDollarChange from cambio_dolar where compra = ? and venta = ?;",
         [compra, venta]
       );
-      const [{ countDollarChange }] = marcaExists[0];
+      const [{ countDollarChange }] = (dollarExists as any)[0];
       if (countDollarChange === 1) {
         const error = new Error("Este cambio de dolar ya existen en la base de datos...");
         return res.status(409).json({ error: error.message });
@@ -70,7 +70,7 @@ export class DollarChangeController {
       );
 
       res.send("Cambio de colar creado correctamente...");
-    } catch (error) {
+    } catch (error: any) {
        res.status(500).json({ error: error.message });
     }
   };
@@ -90,7 +90,7 @@ export class DollarChangeController {
         "select count(BIN_TO_UUID(id)) as idUser from usuario where BIN_TO_UUID(id) = ?;",
         [usuario_modificador]
       );
-      const [{ idUser }] = userExists[0];
+      const [{ idUser }] = (userExists as any)[0];
       if (idUser === 0) {
         const error = new Error("El usuario que esta editando esta marca no existe...");
         return res.status(409).json({ error: error.message });
@@ -100,7 +100,7 @@ export class DollarChangeController {
         "select count(BIN_TO_UUID(id)) as idDollarChange from cambio_dolar where BIN_TO_UUID(id) = ?;",
         [id]
       );
-      const [{ idDollarChange }] = dollarChangeExists[0];
+      const [{ idDollarChange }] = (dollarChangeExists as any)[0];
       if (idDollarChange === 0) {
         const error = new Error(
           "El cambio de dolar que estas buscando, no se encontro..."
@@ -112,7 +112,7 @@ export class DollarChangeController {
         "select count(compra, venta) as value from marca where compra = ? and venta = ? and BIN_TO_UUID(id) != ?;",
         [compra, venta, id]
       );
-      const [{ value }] = valueNumberExists[0];
+      const [{ value }] = (valueNumberExists as any)[0];
       if (value === 1) {
         const error = new Error(
           "Este cambio de dolar se encuentra registrada en la base de datos..."
@@ -126,7 +126,7 @@ export class DollarChangeController {
       );
 
       res.send("El cambio de dolar se modifico correctamente...");
-    } catch (error) {
+    } catch (error: any) {
        res.status(500).json({ error: error.message });
     }
   };
@@ -139,7 +139,7 @@ export class DollarChangeController {
         "select count(BIN_TO_UUID(id)) as id from cambio_dolar where BIN_TO_UUID(id) = ?;",
         [idDollarChange]
       );
-      const [{ id }] = existsDollarChange[0];
+      const [{ id }] = (existsDollarChange as any)[0];
 
       if (id === 0) {
         const error = new Error(
@@ -153,7 +153,7 @@ export class DollarChangeController {
       ]);
 
       res.send("Cambio de dolar eliminado correctamente...");
-    } catch (error) {
+    } catch (error: any) {
        res.status(500).json({ error: error.message });
     }
   };

@@ -10,7 +10,7 @@ export class SeparatedProductController {
                 "select BIN_TO_UUID(pa.id) as id, LPAD(pa.numero_apartado, 10, '0') AS numero_apartado, pa.termino, pa.observaciones, pa.subtotal, pa.total, pa.estado, pa.prefacturacion, pa.facturacion, pa.impuesto_manual, BIN_TO_UUID(cl.id) as id_cliente, cl.nombre_cliente as cliente, pa.fecha_creacion, coalesce(uc.nombre_usuario, '') as nombre_usuario_creador, coalesce(um.nombre_usuario, '') as nombre_usuario_modificador from producto_apartado pa inner join cliente cl on cl.id=pa.id_cliente left join usuario uc on uc.id=pa.usuario_creador left join usuario um on um.id=pa.usuario_modificador order by pa.numero_apartado desc;"
             );
             res.json(result[0]);
-        } catch (error) {
+        } catch (error: any) {
             res.status(500).json({ error: error.message });
         }
     };
@@ -24,7 +24,7 @@ export class SeparatedProductController {
                 [id]
             );
             res.json(result[0]);
-        } catch (error) {
+        } catch (error: any) {
             res.status(500).json({ error: error.message })
         }
     }
@@ -50,14 +50,14 @@ export class SeparatedProductController {
                 "select count(BIN_TO_UUID(id)) as idUser from usuario where BIN_TO_UUID(id) = ?;",
                 [usuario_creador]
             );
-            const [{ idUser }] = userExists[0];
+            const [{ idUser }] = (userExists as any)[0];
             if (idUser === 0) {
                 const error = new Error("El usuario que esta intentando crear esta cotización no existe en la base de datos...");
                 return res.status(409).json({ error: error.message });
             }
 
             const uuId = await connection.query("select UUID() as getIdSeparatedProduct;")
-            const [{ getIdSeparatedProduct }] = uuId[0];
+            const [{ getIdSeparatedProduct }] = (uuId as any)[0];
 
             await connection.query(
                 "insert into producto_apartado (id, termino, observaciones, subtotal, total, estado, prefacturacion, facturacion, impuesto_manual, id_cliente, usuario_creador, fecha_creacion) values(UUID_TO_BIN(?), ?, ?, ?, ?, ?, ?, ?, ?, UUID_TO_BIN(?), UUID_TO_BIN(?), now())",
@@ -84,7 +84,7 @@ export class SeparatedProductController {
                         detallesProductoApartado.id_producto
                     ]
                 );
-                const [{ stock, cantidad_apartado }] = getDataInventory[0];
+                const [{ stock, cantidad_apartado }] = (getDataInventory as any)[0];
 
                 const newStockInvetor = stock - detallesProductoApartado.cantidad;
 
@@ -142,7 +142,7 @@ export class SeparatedProductController {
                 }
             }
             res.send("El apartado del producto se creo correctamente...");
-        } catch (error) {
+        } catch (error: any) {
             res.status(500).json({ error: error.message });
         }
     };
@@ -170,7 +170,7 @@ export class SeparatedProductController {
                 "select count(BIN_TO_UUID(id)) as idUser from usuario where BIN_TO_UUID(id) = ?;",
                 [usuario_modificador]
             );
-            const [{ idUser }] = userExists[0];
+            const [{ idUser }] = (userExists as any)[0];
             if (idUser === 0) {
                 const error = new Error("El usuario que esta intentando modificar este apartado de product no existe en la base de datos...");
                 return res.status(409).json({ error: error.message });
@@ -180,7 +180,7 @@ export class SeparatedProductController {
                 "select count(BIN_TO_UUID(id)) as numberSeparatedProduct from producto_apartado where id = UUID_TO_BIN(?);",
                 [id]
             );
-            const [{ numberSeparatedProduct }] = salesSeparatedProductExists[0];
+            const [{ numberSeparatedProduct }] = (salesSeparatedProductExists as any)[0];
 
             if (numberSeparatedProduct === 0) {
                 const error = new Error(
@@ -212,7 +212,7 @@ export class SeparatedProductController {
                     "select cantidad_apartado as existsProduct from inventario where id_producto = UUID_TO_BIN(?);",
                     [detallesSeparatedProduct.id_producto]
                 );
-                const [{ existsProduct }] = getStockAndExists[0];
+                const [{ existsProduct }] = (getStockAndExists as any)[0];
 
 
                 if (existsProduct > 0) {
@@ -221,13 +221,13 @@ export class SeparatedProductController {
                         "select stock from inventario where id_producto = UUID_TO_BIN(?);",
                         [detallesSeparatedProduct.id_producto]
                     );
-                    const [{ stock }] = getStockInventoryByIdProduct[0];
+                    const [{ stock }] = (getStockInventoryByIdProduct as any)[0];
 
                     const getAmmountSeparatedProduct = await connection.query(
                         "select cantidad from detalle_producto_apartado where id_producto = UUID_TO_BIN(?);",
                         [detallesSeparatedProduct.id_producto]
                     );
-                    const [{ cantidad }] = getAmmountSeparatedProduct[0];
+                    const [{ cantidad }] = (getAmmountSeparatedProduct as any)[0];
 
                     const sumStockInventory = stock + cantidad;
 
@@ -244,7 +244,7 @@ export class SeparatedProductController {
                         [detallesSeparatedProduct.id_producto]
                     );
 
-                    const [{ newStock }] = getNewStockInventory[0];
+                    const [{ newStock }] = (getNewStockInventory as any)[0];
                     const newInventoryStock = newStock - detallesSeparatedProduct.cantidad;
 
                     if (newInventoryStock <= 0) {
@@ -262,7 +262,7 @@ export class SeparatedProductController {
                         "select stock from inventario where id_producto = UUID_TO_BIN(?);",
                         [detallesSeparatedProduct.id_producto]
                     );
-                    const [{ stock }] = getDataProducts[0];
+                    const [{ stock }] = (getDataProducts as any)[0];
 
                     const newStockInventory = stock - detallesSeparatedProduct.cantidad;
                     if (newStockInventory <= 0) {
@@ -313,7 +313,7 @@ export class SeparatedProductController {
             }
 
             res.send("El apartado del producto se modifico correctamente...");
-        } catch (error) {
+        } catch (error: any) {
             res.status(500).json({ error: error.message });
         }
     };
@@ -327,7 +327,7 @@ export class SeparatedProductController {
                 "select BIN_TO_UUID(id_producto) as id_producto, cantidad, BIN_TO_UUID(id_inventario) as id_inventario from detalle_producto_apartado where id_producto_apartado = UUID_TO_BIN(?);",
                 [id]
             );
-            const [{ id_producto, cantidad, id_inventario }] = getDetailsSeparatedProduct[0];
+            const [{ id_producto, cantidad, id_inventario }] = (getDetailsSeparatedProduct as any)[0];
 
 
             if (cantidad === 0) {
@@ -339,13 +339,13 @@ export class SeparatedProductController {
                 "select stock, cantidad_apartado from inventario where id_producto = UUID_TO_BIN(?);",
                 [id_producto]
             );
-            const [{ stock, cantidad_apartado }] = getStockInventory[0];
+            const [{ stock, cantidad_apartado }] = (getStockInventory as any)[0];
 
             const getAmmountDetailsRemission = await connection.query(
                 "select cantidad as ammmountRemission from detalle_producto_apartado where id_producto = UUID_TO_BIN(?);",
                 [id_producto]
             );
-            const [{ ammmountRemission }] = getAmmountDetailsRemission[0];
+            const [{ ammmountRemission }] = (getAmmountDetailsRemission as any)[0];
             const resultNewStock = stock + ammmountRemission;
             const resultNewAmmount = ammmountRemission - cantidad_apartado;
 
@@ -360,7 +360,7 @@ export class SeparatedProductController {
             );
 
             res.send("El apartado se anulo correctamente...");
-        } catch (error) {
+        } catch (error: any) {
             res.status(500).json({ error: error.message });
         }
     };
@@ -374,7 +374,7 @@ export class SeparatedProductController {
                 "select BIN_TO_UUID(id_producto) as id_producto, cantidad, BIN_TO_UUID(id_inventario) as id_inventario from detalle_producto_apartado where id_producto_apartado = UUID_TO_BIN(?);",
                 [id]
             );
-            const [{ id_producto, cantidad, id_inventario }] = getDetailsSeparatedProduct[0];
+            const [{ id_producto, cantidad, id_inventario }] = (getDetailsSeparatedProduct as any)[0];
 
 
             if (cantidad === 0) {
@@ -386,13 +386,13 @@ export class SeparatedProductController {
                 "select stock, cantidad_apartado from inventario where id_producto = UUID_TO_BIN(?);",
                 [id_producto]
             );
-            const [{ stock, cantidad_apartado }] = getStockInventory[0];
+            const [{ stock, cantidad_apartado }] = (getStockInventory as any)[0];
 
             const getAmmountDetailsRemission = await connection.query(
                 "select cantidad as ammmountRemission from detalle_producto_apartado where id_producto = UUID_TO_BIN(?);",
                 [id_producto]
             );
-            const [{ ammmountRemission }] = getAmmountDetailsRemission[0];
+            const [{ ammmountRemission }] = (getAmmountDetailsRemission as any)[0];
             const resultNewStock = stock - ammmountRemission;
             const resultNewAmmount = ammmountRemission - cantidad_apartado;
 
@@ -407,7 +407,7 @@ export class SeparatedProductController {
             );
 
             res.send("El apartado se restauro correctamente...");
-        } catch (error) {
+        } catch (error: any) {
             res.status(500).json({ error: error.message });
         }
     };
@@ -424,14 +424,14 @@ export class SeparatedProductController {
                 "select count(BIN_TO_UUID(dpa.id_producto)) as existsProductInventory from detalle_producto_apartado dpa inner join inventario i on i.id=dpa.id_inventario where dpa.id_producto = UUID_TO_BIN(?) and dpa.id_inventario = UUID_TO_BIN(?) and dpa.id_producto_apartado = UUID_TO_BIN(?);",
                 [id_producto, id_inventario, id]
             );
-            const [{ existsProductInventory }] = productExistsInInventory[0];
+            const [{ existsProductInventory }] = (productExistsInInventory as any)[0];
 
             if (existsProductInventory > 0) {
                 const existsProductInSeparated = await connection.query(
                     "select count(BIN_TO_UUID(id_producto)) as productExists from detalle_producto_apartado where id_producto = UUID_TO_BIN(?) and id_producto_apartado = UUID_TO_BIN(?);",
                     [id_producto, id]
                 );
-                const [{ productExists }] = existsProductInSeparated[0];
+                const [{ productExists }] = (existsProductInSeparated as any)[0];
                 if (productExists === 0) {
                     const error = new Error("El producto que estas buscando no existe en el apartado...");
                     return res.status(404).json({ error: error.message });
@@ -441,13 +441,13 @@ export class SeparatedProductController {
                     "select stock, cantidad_apartado from inventario where id_producto = UUID_TO_BIN(?);",
                     [id_producto]
                 );
-                const [{ stock, cantidad_apartado }] = getStockInventory[0];
+                const [{ stock, cantidad_apartado }] = (getStockInventory as any)[0];
 
                 const getAmmountDetailsRemission = await connection.query(
                     "select cantidad as ammmountRemission from detalle_producto_apartado where id_producto = UUID_TO_BIN(?);",
                     [id_producto]
                 );
-                const [{ ammmountRemission }] = getAmmountDetailsRemission[0];
+                const [{ ammmountRemission }] = (getAmmountDetailsRemission as any)[0];
                 const resultNewStock = stock + ammmountRemission;
 
                 if (cantidad_apartado === 0) {
@@ -474,7 +474,7 @@ export class SeparatedProductController {
                     "select dpa.subtotal, pa.impuesto_manual from detalle_producto_apartado dpa inner join producto_apartado pa on pa.id=dpa.id_producto_apartado where dpa.id_producto_apartado = UUID_TO_BIN(?);",
                     [id]
                 );
-                const [{ subtotal, impuesto_manual }] = getDataSeparatedProduct[0];
+                const [{ subtotal, impuesto_manual }] = (getDataSeparatedProduct as any)[0];
 
                 impuesto_manual[0].valor_cantidad = parseFloat(
                     (subtotal * impuesto_manual[0].valor_porcentaje / 100).toFixed(2)
@@ -490,7 +490,7 @@ export class SeparatedProductController {
 
                 res.send("Producto eliminado correctamente...");
             }
-        } catch (error) {
+        } catch (error: any) {
             res.status(500).json({ error: error.message });
         }
     };

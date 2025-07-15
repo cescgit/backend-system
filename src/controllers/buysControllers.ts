@@ -10,7 +10,7 @@ export class BuysController {
                 "select BIN_TO_UUID(c.id) as id, LPAD(c.numero_compra, 10, '0') AS numero_compra, c.numero_factura_proveedor, c.termino, c.observaciones, c.cuenta_por_pagar, c.impuesto_manual, c.subtotal, c.total, BIN_TO_UUID(pv.id) as id_proveedor, pv.nombre_proveedor as proveedor, c.fecha_creacion, coalesce(uc.nombre_usuario, '') as nombre_usuario_creador from compra c inner join proveedor pv on pv.id=c.id_proveedor left join usuario uc on uc.id=c.usuario_creador order by c.numero_compra desc;"
             );
             res.json(result[0]);
-        } catch (error) {
+        } catch (error: any) {
             res.status(500).json({ error: error.message });
         }
     };
@@ -24,7 +24,7 @@ export class BuysController {
                 [id]
             );
             res.json(result[0]);
-        } catch (error) {
+        } catch (error: any) {
             res.status(500).json({ error: error.message })
         }
     }
@@ -54,7 +54,7 @@ export class BuysController {
                 "select count(BIN_TO_UUID(id)) as idUser from usuario where BIN_TO_UUID(id) = ?;",
                 [usuario_creador]
             );
-            const [{ idUser }] = userExists[0];
+            const [{ idUser }] = (userExists as any)[0];
             if (idUser === 0) {
                 const error = new Error("El usuario que esta intentando crear esta compra no existe en la base de datos...");
                 return res.status(409).json({ error: error.message });
@@ -65,7 +65,7 @@ export class BuysController {
                 "select count(BIN_TO_UUID(id)) as idSupplier from proveedor where BIN_TO_UUID(id) = ?;",
                 [id_proveedor]
             );
-            const [{ idSupplier }] = supplierExists[0];
+            const [{ idSupplier }] = (supplierExists as any)[0];
             if (idSupplier === 0) {
                 const error = new Error("El proveedor que esta buscando no existe en la base de datos...");
                 return res.status(409).json({ error: error.message });
@@ -76,7 +76,7 @@ export class BuysController {
                 "select count(numero_factura_proveedor) as valueNumberSupplier from compra where numero_factura_proveedor = ? and BIN_TO_UUID(id_proveedor) = ?;",
                 [numero_factura_proveedor, id_proveedor]
             );
-            const [{ valueNumberSupplier }] = numberInvoiceSupplierExists[0];
+            const [{ valueNumberSupplier }] = (numberInvoiceSupplierExists as any)[0];
             if (valueNumberSupplier === 1) {
                 const error = new Error(
                     "Este número de factura del proveedor ya existen en la base de datos..."
@@ -85,7 +85,7 @@ export class BuysController {
             }
 
             const uuId = await connection.query("select UUID() as getIdBuys;")
-            const [{ getIdBuys }] = uuId[0];
+            const [{ getIdBuys }] = (uuId as any)[0];
 
             await connection.query(
                 "insert into compra (id, numero_factura_proveedor, termino, observaciones, subtotal, total, cuenta_por_pagar, impuesto_manual, id_proveedor, fecha_creacion, usuario_creador) values (UUID_TO_BIN(?), ?, ?, ?, ?, ?, ?, ?, UUID_TO_BIN(?), now(), UUID_TO_BIN(?));",
@@ -109,7 +109,7 @@ export class BuysController {
                     "select count(BIN_TO_UUID(id)) as idProduct from producto where BIN_TO_UUID(id) = ?;",
                     [detallesCompra.id_producto]
                 );
-                const [{ idProduct }] = productExists[0];
+                const [{ idProduct }] = (productExists as any)[0];
                 if (idProduct === 0) {
                     const error = new Error("El producto que esta buscando no existe en la base de datos...");
                     return res.status(409).json({ error: error.message });
@@ -130,7 +130,7 @@ export class BuysController {
                     "select count(k.cantidad_disponible) as existsProducts from kardex k inner join producto p on p.id=k.id_producto where BIN_TO_UUID(k.id_producto) = ?;",
                     [detallesCompra.id_producto]
                 )
-                const [{ existsProducts }] = getExistsbyKardex[0];
+                const [{ existsProducts }] = (getExistsbyKardex as any)[0];
 
                 if (existsProducts === 0) {
 
@@ -144,7 +144,7 @@ export class BuysController {
                         [detallesCompra.id_producto]
                     )
 
-                    const [{ utilidad1, utilidad2, utilidad3, utilidad4 }] = getEarningProductById[0];
+                    const [{ utilidad1, utilidad2, utilidad3, utilidad4 }] = (getEarningProductById as any)[0];
 
                     const earningNew1 = 100 - utilidad1;
                     const result1 = earningNew1 / 100;
@@ -180,7 +180,7 @@ export class BuysController {
                         "select k.fecha_creacion, k.cantidad_disponible, k.total_disponible from kardex k inner join  producto p on p.id=k.id_producto where BIN_TO_UUID(k.id_producto) = ? order by k.fecha_creacion desc;",
                         [detallesCompra.id_producto]
                     )
-                    const [{ cantidad_disponible, total_disponible }] = getStockbyKardex[0];
+                    const [{ cantidad_disponible, total_disponible }] = (getStockbyKardex as any)[0];
 
                     const resultCantidadNew = cantidad_disponible + detallesCompra.cantidad;
                     const resultTotal = parseInt(total_disponible) + parseInt(detallesCompra.subtotal.toString());
@@ -190,7 +190,7 @@ export class BuysController {
                         "select utilidad1, utilidad2, utilidad3, utilidad4 from producto where BIN_TO_UUID(id) = ?;",
                         [detallesCompra.id_producto]
                     )
-                    const [{ utilidad1, utilidad2, utilidad3, utilidad4 }] = getEarningProductById[0];
+                    const [{ utilidad1, utilidad2, utilidad3, utilidad4 }] = (getEarningProductById as any)[0];
 
                     const earningNew1 = 100 - utilidad1;
                     const result1 = earningNew1 / 100;
@@ -236,7 +236,7 @@ export class BuysController {
                     "select count(i.stock) as stock from inventario i  inner join producto p on p.id=i.id_producto inner join detalle_compra dc on dc.id_producto=p.id where BIN_TO_UUID(i.id_producto) = ?;",
                     [detallesCompra.id_producto]
                 )
-                const [{ stock }] = getStockbyInventory[0];
+                const [{ stock }] = (getStockbyInventory as any)[0];
                 if (stock === 0) {
                     await connection.query(
                         "insert into inventario (stock, id_producto, id_compra) values (?, UUID_TO_BIN(?), UUID_TO_BIN(?));",
@@ -264,11 +264,11 @@ export class BuysController {
                 );
 
                 // * get number of buys
-                const [{ numberBuys }] = resultNumberBuys[0];
+                const [{ numberBuys }] = (resultNumberBuys as any)[0];
                 const descriptionBalanceSupplier = `Compra N° ${numberBuys}`;
 
                 const uuIdBalanceSupplier = await connection.query("select UUID() as getIdBalanceSupplier;")
-                const [{ getIdBalanceSupplier }] = uuIdBalanceSupplier[0];
+                const [{ getIdBalanceSupplier }] = (uuIdBalanceSupplier as any)[0];
 
                 // * insert data in the first register of balance supplier
                 await connection.query(
@@ -304,7 +304,7 @@ export class BuysController {
                 );
             }
             res.send("La compra se creo correctamente...");
-        } catch (error) {
+        } catch (error: any) {
             res.status(500).json({ error: error.message });
         }
     };

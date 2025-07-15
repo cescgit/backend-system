@@ -10,7 +10,7 @@ export class CompanyController {
         "select BIN_TO_UUID(id) as id, nombre_empresa, eslogan, direccion_empresa, ruc, telefono_empresa, celular_empresa, correo_empresa, logotipo, fecha_creacion, fecha_modificacion from empresa;"
       );
       res.json(result[0]);
-    } catch (error) {
+    } catch (error: any) {
        res.status(500).json({ error: error.message });
     }
   };
@@ -25,7 +25,7 @@ export class CompanyController {
         );
         
         res.json(result[0]);
-      } catch (error) {
+      } catch (error: any) {
          res.status(500).json({ error: error.message });
       }
     };
@@ -51,7 +51,7 @@ export class CompanyController {
         "select count(id) as idUser from usuario where BIN_TO_UUID(id) = ?;",
         [usuario_creador]
       );
-      const [{ idUser }] = userExists[0];
+      const [{ idUser }] = (userExists as any)[0];
 
       if (idUser === 0) {
         const error = new Error(
@@ -76,7 +76,7 @@ export class CompanyController {
       );
 
       res.send("La información de la empresa se guardo correctamente...");
-    } catch (error) {
+    } catch (error: any) {
        res.status(500).json({ error: error.message });
     }
   };
@@ -103,7 +103,7 @@ export class CompanyController {
         "select count(id) as idUser from usuario where  BIN_TO_UUID(id) = ?;",
         [usuario_modificador]
       );
-      const [{ idUser }] = userExists[0];
+      const [{ idUser }] = (userExists as any)[0];
 
       if (idUser === 0) {
         const error = new Error(
@@ -116,7 +116,7 @@ export class CompanyController {
         "select count(BIN_TO_UUID(id)) as idCompany from empresa where BIN_TO_UUID(id) = ?;",
         [id]
       );
-      const [{ idCompany }] = companyExists[0];
+      const [{ idCompany }] = (companyExists as any)[0];
       if (idCompany === 0) {
         const error = new Error(
           "La información que estas buscando no se encontro..."
@@ -142,7 +142,7 @@ export class CompanyController {
       );
 
       res.send("La información de la empresa se modifico correctamente...");
-    } catch (error) {
+    } catch (error: any) {
        res.status(500).json({ error: error.message });
     }
   };

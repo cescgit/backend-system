@@ -10,7 +10,7 @@ export class PurchaseReturnController {
                 "select BIN_TO_UUID(dc.id) as id, dc.numero_compra, dc.numero_factura_proveedor, dc.termino, dc.observaciones, dc.subtotal, dc.total, BIN_TO_UUID(i.id) as id_impuesto, i.abreviatura, i.valor_cantidad, BIN_TO_UUID(pv.id) as id_proveedor, pv.nombre_proveedor as proveedor, BIN_TO_UUID(dc.id_compra) as id_compra, dc.fecha_creacion from devolucion_compra dc inner join proveedor pv on pv.id=dc.id_proveedor inner join impuesto i on i.id=dc.id_impuesto order by dc.numero_compra desc;"
             );
             res.json(result[0]);
-        } catch (error) {
+        } catch (error: any) {
             res.status(500).json({ error: error.message });
         }
     };
@@ -25,7 +25,7 @@ export class PurchaseReturnController {
             );
 
             res.json(result[0]);
-        } catch (error) {
+        } catch (error: any) {
             res.status(500).json({ error: error.message })
         }
     }
@@ -53,14 +53,14 @@ export class PurchaseReturnController {
                 "select count(BIN_TO_UUID(id)) as idUser from usuario where BIN_TO_UUID(id) = ?;",
                 [usuario_creador]
             );
-            const [{ idUser }] = userExists[0];
+            const [{ idUser }] = (userExists as any)[0];
             if (idUser === 0) {
                 const error = new Error("El usuario que esta intentando crear esta devolución de compra no existe en la base de datos...");
                 return res.status(409).json({ error: error.message });
             }
 
             const uuId = await connection.query("select UUID() as getIdBuys;");
-            const [{ getIdBuys }] = uuId[0];
+            const [{ getIdBuys }] = (uuId as any)[0];
 
             const resultInsertBuys = await connection.query(
                 "insert into devolucion_compra (id, numero_factura_proveedor, numero_compra, termino, observaciones, subtotal, total, id_impuesto, id_proveedor, id_compra, fecha_creacion, usuario_creador) values (UUID_TO_BIN(?), ?, ?, ?, ?, ?, ?, UUID_TO_BIN(?), UUID_TO_BIN(?), UUID_TO_BIN(?), now(), UUID_TO_BIN(?));",
@@ -80,7 +80,7 @@ export class PurchaseReturnController {
             );            
 
             for (const detallesDevolucionCompra of detalle_devolucion_compra) {
-                const resultInsertDetailsBuys = await connection.query(
+                await connection.query(
                     "insert into detalle_devolucion_compra (cantidad, subtotal, id_producto, id_devolucion_compra) values (?, ?, UUID_TO_BIN(?), UUID_TO_BIN(?));",
                     [
                         detallesDevolucionCompra.cantidad,
@@ -107,7 +107,7 @@ export class PurchaseReturnController {
                             "select k.cantidad_disponible, k.total_disponible, k.precio_entrada from kardex k inner join producto p on p.id=k.id_producto where BIN_TO_UUID(k.id_producto) = ? order by k.fecha_creacion desc limit 1;",
                             [detallesDevolucionCompra.id_producto]
                         )
-                        const [{ cantidad_disponible, total_disponible }] = getStockbyKardex[0];
+                        const [{ cantidad_disponible, total_disponible }] = (getStockbyKardex as any)[0];
                                                 
                         const newProductQuantity = cantidad_disponible - detallesDevolucionCompra.cantidad;
                         const newTotalBalance = total_disponible - Number(detallesDevolucionCompra.subtotal);
@@ -146,7 +146,7 @@ export class PurchaseReturnController {
                 }
             }
             res.send("La devolución de la compra se creo correctamente...");
-        } catch (error) {
+        } catch (error: any) {
             res.status(500).json({ error: error.message });
         }
     };

@@ -12,7 +12,7 @@ export class CategoriesControllers {
         "select BIN_TO_UUID(c.id) as id, c.nombre_categoria, c.descripcion, c.estado, c.fecha_creacion, coalesce(uc.nombre_usuario, '') as nombre_usuario_creador, coalesce(um.nombre_usuario, '') as nombre_usuario_modificador from categoria c left join usuario uc on uc.id=c.usuario_creador left join usuario um on um.id=c.usuario_modificador;"
       );
       res.json(result[0]);
-    } catch (error) {
+    } catch (error: any) {
        res.status(500).json({ error: error.message });
     }
   };
@@ -27,7 +27,7 @@ export class CategoriesControllers {
       );
 
       res.json(result[0]);
-    } catch (error) {
+    } catch (error: any) {
        res.status(500).json({ error: error.message });
     }
   };
@@ -48,7 +48,7 @@ export class CategoriesControllers {
         "select count(BIN_TO_UUID(id)) as idUser from usuario where BIN_TO_UUID(id) = ?;",
         [usuario_creador]
       );
-      const [{ idUser }] = userExists[0];
+      const [{ idUser }] = (userExists as any)[0];
       if (idUser === 0) {
         const error = new Error("El usuario que esta intentando crear la categoría, no existe...");
         return res.status(409).json({ error: error.message });
@@ -58,7 +58,7 @@ export class CategoriesControllers {
         "select count(nombre_categoria) as valueCategoria from categoria where nombre_categoria = ?;",
         [nombre_categoria]
       );
-      const [{ valueCategoria }] = marcaExists[0];
+      const [{ valueCategoria }] = (marcaExists as any)[0];
       if (valueCategoria === 1) {
         const error = new Error(
           "Esta categoría ya existen en la base de datos..."
@@ -72,7 +72,7 @@ export class CategoriesControllers {
       );
 
       res.send("Categoría creada correctamente...");
-    } catch (error) {
+    } catch (error: any) {
        res.status(500).json({ error: error.message });
     }
   };
@@ -92,7 +92,7 @@ export class CategoriesControllers {
         "select count(BIN_TO_UUID(id)) as idUser from usuario where BIN_TO_UUID(id) = ?;",
         [usuario_modificador]
       );
-      const [{ idUser }] = userExists[0];
+      const [{ idUser }] = (userExists as any)[0];
       if (idUser === 0) {
         const error = new Error("El usuario que esta intentando editar la categoría, no existe...");
         return res.status(409).json({ error: error.message });
@@ -102,7 +102,7 @@ export class CategoriesControllers {
         "select count(BIN_TO_UUID(id)) as idCategory from categoria where BIN_TO_UUID(id) = ?;",
         [id]
       );
-      const [{ idCategory }] = brandExists[0];
+      const [{ idCategory }] = (brandExists as  any)[0];
       if (idCategory === 0) {
         const error = new Error(
           "La categoría que estas buscando, no se encontro..."
@@ -114,7 +114,7 @@ export class CategoriesControllers {
         "select count(nombre_categoria) as valueName from categoria where nombre_categoria = ? and BIN_TO_UUID(id) != ?;",
         [nombre_categoria, id]
       );
-      const [{ valueName }] = nameBrandExists[0];
+      const [{ valueName }] = (nameBrandExists as  any)[0];
       if (valueName === 1) {
         const error = new Error(
           "Esta categoría se encuentra registrada en la base de datos..."
@@ -134,7 +134,7 @@ export class CategoriesControllers {
       );
 
       res.send("La categoría se modifico correctamente...");
-    } catch (error) {
+    } catch (error: any) {
        res.status(500).json({ error: error.message });
     }
   };
@@ -147,7 +147,7 @@ export class CategoriesControllers {
         "select count(BIN_TO_UUID(id)) as id from categoria where BIN_TO_UUID(id) = ?;",
         [idCategory]
       );
-      const [{ id }] = exitstsBrand[0];
+      const [{ id }] = (exitstsBrand as any)[0];
 
       if (id === 0) {
         const error = new Error(
@@ -162,7 +162,7 @@ export class CategoriesControllers {
       );
 
       res.send("Categoría eliminada correctamente...");
-    } catch (error) {
+    } catch (error: any) {
        res.status(500).json({ error: error.message });
     }
   };

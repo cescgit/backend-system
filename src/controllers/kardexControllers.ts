@@ -11,7 +11,7 @@ export class KardexController {
                 [id]
             );
             res.json(result[0]);
-        } catch (error) {
+        } catch (error: any) {
             res.status(500).json({ error: error.message })
         }
     } 
@@ -28,7 +28,7 @@ export class KardexController {
                 );
                 res.json(result[0]);
             }
-        } catch (error) {
+        } catch (error: any) {
             res.status(500).json({ error: error.message })
         }
     }
@@ -44,7 +44,7 @@ export class KardexController {
                 );
                 res.json(result[0]);
             }
-        } catch (error) {
+        } catch (error: any) {
             res.status(500).json({ error: error.message })
         }
     }

@@ -4,8 +4,8 @@ import { deviceInformation, IEmail } from "../interface/emailInterface";
 
 export class AuthEmail {
   static sendConfirmationEmail = async (user: IEmail) => {
-    const infoEmail = await transport.sendMail({
-      form: "Accounting system <admin@accountingsystem.com>",
+    await transport.sendMail({
+      from: "Accounting system <admin@accountingsystem.com>",
       to: user.emailUser,
       subject: "Accounting system - Confirma tu cuenta",
       text: "Accounting system - Confirma tu cuenta",
@@ -103,7 +103,7 @@ export class AuthEmail {
 
   static sendPasswordResetToken = async (user: IEmail) => {
     const infoEmail = await transport.sendMail({
-      form: "Accounting system <admin@accountingsystem.com>",
+      from: "Accounting system <admin@accountingsystem.com>",
       to: user.emailUser,
       subject: "Accounting system - Confirma tu cuenta",
       text: "Accounting system - Confirma tu cuenta",
@@ -200,7 +200,7 @@ export class AuthEmail {
 
     static sendLogin = async ({user, login}: {user: IEmail, login: deviceInformation}) => {
     const infoEmail = await transport.sendMail({
-      form: "Accounting system <admin@accountingsystem.com>",
+      from: "Accounting system <admin@accountingsystem.com>",
       to: user.emailUser,
       subject: "Accounting system - Inicio de sesión",
       text: "Accounting system - Inicio de sesión",

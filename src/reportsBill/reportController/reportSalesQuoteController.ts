@@ -35,7 +35,7 @@ export class reportSalesQuoteController {
         celular_empresa,
         correo_empresa,
         logotipo
-      } = resultDataCompany[0][0];
+      } = (resultDataCompany[0] as any)[0];
 
       const {
         numero_cotizacion,
@@ -53,7 +53,7 @@ export class reportSalesQuoteController {
         total,
         subtotal,
         ruc: ruc_cliente,
-      } = resultSalesQuote[0][0];
+      } = (resultSalesQuote[0] as any)[0];
 
       const {
         porcentaje,
@@ -67,7 +67,7 @@ export class reportSalesQuoteController {
       const colorText = text === "FACTURADA" ? "#a2d2ff" : text === "PREFACTURADA" ? "#a2d2ff" : text === "VENCIDA" ? "#ffb3c1" : "";
       const tableBody = [
         ["Cantidad", "Producto", "SAC", "U/M", "Precio U.", "Valor"],
-        ...detalles.map((item: any) => [
+        ...(detalles as any).map((item: any) => [
           { text: item.cantidad, style: "center" },
           item.nombre_producto,
           item.sac,
@@ -108,7 +108,7 @@ export class reportSalesQuoteController {
             },
           ],
           margin: [20, 10, 30, 20],
-          height: 200,
+         // height: 200,
         },
         watermark: {
           text: text, fontSize: 60, angle: -45, color: colorText, opacity: 0.5, bold: true
@@ -313,7 +313,7 @@ export class reportSalesQuoteController {
         res.end(buffer);
       });
 
-    } catch (error) {
+    } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
   }

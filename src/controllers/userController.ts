@@ -12,7 +12,7 @@ export class UserController {
       );
 
       res.json(result[0]);
-    } catch (error) {
+    } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
   };
@@ -25,7 +25,7 @@ export class UserController {
       );
 
       res.json(result[0]);
-    } catch (error) {
+    } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
   };
@@ -39,7 +39,7 @@ export class UserController {
         [id]
       );      
       res.json(result[0]);
-    } catch (error) {
+    } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
   };
@@ -63,7 +63,7 @@ export class UserController {
         "select count(cedula_usuario) as valueCedula from usuario where cedula_usuario = ?;",
         [cedula_usuario]
       );
-      const [{ valueCedula }] = cedulaExists[0];
+      const [{ valueCedula }] = (cedulaExists as any)[0];
 
       if (valueCedula === 1) {
         const error = new Error(
@@ -76,7 +76,7 @@ export class UserController {
         "select count(correo_usuario) as valueEmail from usuario where correo_usuario = ?;",
         [correo_usuario]
       );
-      const [{ valueEmail }] = emailExists[0];
+      const [{ valueEmail }] = (emailExists as any)[0];
 
       if (valueEmail === 1) {
         const error = new Error(
@@ -101,7 +101,7 @@ export class UserController {
       );
 
       res.send("Usuario creado correctamente");
-    } catch (error) {
+    } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
   };
@@ -127,7 +127,7 @@ export class UserController {
         "select count(BIN_TO_UUID(id)) as idUser from usuario where BIN_TO_UUID(id) = ?;",
         [usuario_creador]
       );
-      const [{ idUser }] = userExists[0];
+      const [{ idUser }] = (userExists as any)[0];
         if (idUser === 0) {
           const error = new Error("Hubo un error al guardar el registro");
           return res.status(409).json({ error: error.message });
@@ -137,7 +137,7 @@ export class UserController {
         "select count(cedula_usuario) as valueCedula from usuario where cedula_usuario = ?;",
         [cedula_usuario]
       );
-      const [{ valueCedula }] = cedulaExists[0];
+      const [{ valueCedula }] = (cedulaExists as any)[0];
 
       if (valueCedula === 1) {
         const error = new Error(
@@ -150,7 +150,7 @@ export class UserController {
         "select count(correo_usuario) as valueEmail from usuario where correo_usuario = ?;",
         [correo_usuario]
       );
-      const [{ valueEmail }] = emailExists[0];
+      const [{ valueEmail }] = (emailExists as any)[0];
 
       if (valueEmail === 1) {
         const error = new Error(
@@ -176,7 +176,7 @@ export class UserController {
       );
 
       res.send("Usuario creado correctamente");
-    } catch (error) {
+    } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
   };
@@ -190,7 +190,7 @@ export class UserController {
         "select count(BIN_TO_UUID(id)) as idUser from usuario where BIN_TO_UUID(id) = ?;",
         [id]
       );
-      const [{ idUser }] = userExists[0];
+      const [{ idUser }] = (userExists as any)[0];
       if (idUser === 0) {
         const error = new Error("El usuario no existe...");
         return res.status(409).json({ error: error.message });
@@ -202,7 +202,7 @@ export class UserController {
         "select count(correo_usuario) as valueEmail from usuario where correo_usuario = ? and BIN_TO_UUID(id) != ?;",
         [correo_usuario, id]
       );
-      const [{ valueEmail }] = emailExists[0];
+      const [{ valueEmail }] = (emailExists as any)[0];
 
       if (valueEmail === 1) {
         const error = new Error(
@@ -215,7 +215,7 @@ export class UserController {
         "select password as getOldPassword from usuario where id = UUID_TO_BIN(?);",
         [id]
       );
-      const [{getOldPassword}] = passwordOld[0];
+      const [{getOldPassword}] = (passwordOld as any)[0];
 
       const passwordHasheada = await hashPassword(password);
       const isPasswordCorrect = await checkedPassword(oldPasswordUser, getOldPassword);
@@ -235,7 +235,7 @@ export class UserController {
       );
 
       res.send("Sus datos se modificarón correctamente...");
-    } catch (error) {
+    } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
   };
@@ -249,7 +249,7 @@ export class UserController {
         "select count(BIN_TO_UUID(id)) as idUser from usuario where BIN_TO_UUID(id) = ?;",
         [id]
       );
-      const [{ idUser }] = userExists[0];
+      const [{ idUser }] = (userExists as any)[0];
       if (idUser === 0) {
         const error = new Error("El usuario que esta editando no existe...");
         return res.status(409).json({ error: error.message });
@@ -262,7 +262,7 @@ export class UserController {
         "select count(correo_usuario) as valueEmail from usuario where correo_usuario = ? and BIN_TO_UUID(id) != ?;",
         [correo_usuario, id]
       );
-      const [{ valueEmail }] = emailExists[0];
+      const [{ valueEmail }] = (emailExists as any)[0];
 
       if (valueEmail === 1) {
         const error = new Error(
@@ -286,7 +286,7 @@ export class UserController {
       );
 
       res.send("Los datos se modificarón correctamente...");
-    } catch (error) {
+    } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
   };
@@ -299,7 +299,7 @@ export class UserController {
         "select count(BIN_TO_UUID(id)) as id from usuario where BIN_TO_UUID(id) = ?;",
         [idUser]
       );
-      const [{ id }] = exitstUser[0];      
+      const [{ id }] = (exitstUser as any)[0];      
 
       if (id === 0) {
         const error = new Error(
@@ -314,7 +314,7 @@ export class UserController {
 
       res.send("Usuario eliminado correctamente...");
 
-    } catch (error) {
+    } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
   };
