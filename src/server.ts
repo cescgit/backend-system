@@ -3,7 +3,7 @@ import dotenv from "dotenv";
 import cors from "cors"
 import morgan from 'morgan';
 import { connectDB } from './config/db';
-import { corsConfig } from './config/cors';
+import { corsOptions } from './config/cors';
 
 // * routes the data
 import userRoutes from "./routes/userRoutes";
@@ -52,7 +52,7 @@ dotenv.config()
 connectDB()
 
 const app = express();
-app.use(cors(corsConfig))
+app.use(cors(corsOptions))
 app.use(morgan("dev"));
 app.use(express.json());
 
